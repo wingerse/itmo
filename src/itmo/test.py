@@ -4,7 +4,7 @@ import time
 import numpy as np
 import torch
 import torch.nn as nn
-from skimage.measure import compare_ssim
+from skimage.metrics import structural_similarity
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
@@ -116,7 +116,7 @@ with torch.no_grad():
                 ) / 2.0
 
                 # calculating SSIM score
-                ssim = compare_ssim(generated, real, multichannel=True)
+                ssim = structural_similarity(generated, real, multichannel=True)
                 avg_ssim += ssim
 
 if opt.log_scores:

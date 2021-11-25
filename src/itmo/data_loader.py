@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import torch
 import torchvision.transforms as transforms
-from PIL import Image
 from torch.utils.data import Dataset
 
 
@@ -38,7 +37,7 @@ class HDRDataset(Dataset):
 
         # transformations on LDR input ->
 
-        ldr_sample = Image.open(self.ldr_image_path).convert("RGB")
+        ldr_sample = cv2.cvtColor(cv2.imread(self.ldr_image_path), cv2.COLOR_BGR2RGB)
         transform_list = [
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),

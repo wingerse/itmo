@@ -11,7 +11,7 @@ class Options:
 
         # training options
         self.parser.add_argument(
-            "--batch_size", type=int, default=2, help="batch size for training network."
+            "--batch_size", type=int, default=1, help="batch size for training network."
         )
         self.parser.add_argument(
             "--epochs", type=int, default=200, help="number of epochs"
