@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+cycler = "*"
+decorator = "*"
+imageio = "*"
+kiwisolver = "*"
+matplotlib = "*"
+networkx = "*"
+numpy = "*"
+opencv-python = "*"
+pillow = "*"
+pyparsing = "*"
+python-dateutil = "*"
+pywavelets = "*"
+scikit-image = "*"
+scipy = "*"
+six = "*"
+torch = "*"
+torchvision = "*"
+tqdm = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
