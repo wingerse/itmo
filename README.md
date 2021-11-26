@@ -3,4 +3,4 @@
 
     $ pip install pipenv
     # in the root directory
-    $ pipenv install
+    $ PIPENV_VENV_IN_PROJECT=1 pipenv install
