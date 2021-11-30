@@ -1,0 +1,13 @@
+name: fyp
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - opencv
+  - scikit-image
+  - cudatoolkit=10.2
+  - pytorch
+  - torchvision
+  - tqdm
