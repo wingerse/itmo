@@ -1,6 +1,5 @@
 # Inverse Tone Mapping
 ## Setup
-
-    $ pip install pipenv
-    # in the root directory
-    $ PIPENV_VENV_IN_PROJECT=1 pipenv install
+    - Install [miniconda](https://docs.conda.io/en/latest/miniconda.html)
+    - `conda env create -f environment.yml` (u may need to do this via conda terminal)
+    - Before running any python files: `conda activate fyp`
