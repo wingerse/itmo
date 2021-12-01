@@ -47,10 +47,10 @@ import numpy as np
 
 from fyp.src import util
 
-def psnr(testImage, referenceImage):
+def logPSNR(testImage, referenceImage):
 
     Lmin =0
-    print(referenceImage)
+    # print(referenceImage)
     testImageLuminance = max(testImage,Lmin)
     referenceImageLuminance = max(referenceImage, Lmin)
     mse = np.mean((log10(testImageLuminance)- log10(referenceImageLuminance)) ** 2)
@@ -74,7 +74,7 @@ def main():
 
     # Value expected: 29.73dB
     print("-- First Test --")
-    print(f"PSNR value is {psnr(testImage, referenceImage)} dB")
+    print(f"PSNR value is {logPSNR(testImage, referenceImage)} dB")
 
 
     # # Value expected: 31.53dB (Wikipedia Example)
