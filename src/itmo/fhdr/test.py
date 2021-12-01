@@ -1,5 +1,3 @@
-import os
-import time
 
 import numpy as np
 import torch
@@ -8,11 +6,12 @@ from skimage.metrics import structural_similarity
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from data_loader import HDRDataset
-from model import FHDR
-from options import Options
-from util import make_required_directories, mu_tonemap, save_hdr_image, save_ldr_image
-from vgg import VGGLoss
+from .data_loader import HDRDataset
+from .model import FHDR
+from .options import Options
+from .util import make_required_directories, mu_tonemap, save_ldr_image, save_hdr_image
+import cv2
+from torchvision import transforms
 
 # initialise options
 opt = Options().parse()
@@ -66,7 +65,6 @@ print("Starting evaluation. Results will be saved in '/test_results' directory")
 with torch.no_grad():
 
     for batch, data in enumerate(tqdm(data_loader, desc="Testing %")):
-
         input = data["ldr_image"].data.cuda()
         ground_truth = data["hdr_image"].data.cuda()
 

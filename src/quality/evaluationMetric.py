@@ -48,7 +48,6 @@ import numpy as np
 from fyp.src import util
 
 def logPSNR(testImage, referenceImage):
-
     Lmin =0
     # print(referenceImage)
     testImageLuminance = max(testImage,Lmin)
@@ -59,7 +58,6 @@ def logPSNR(testImage, referenceImage):
     Lmax = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
     logPsnr = 10 * log10(log10(Lmax)/mse)
     return logPsnr
-
 
 def main():
     # dir_path = os.path.dirname(os.path.realpath(__file__))

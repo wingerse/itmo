@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 import torch
+from torchvision import transforms
 
 
 def load_checkpoint(model, ckpt_path):
@@ -35,6 +36,23 @@ def mu_tonemap(img):
     MU = 5000.0
     return torch.log(1.0 + MU * (img + 1.0) / 2.0) / np.log(1.0 + MU)
 
+def preprocess_ldr(ldr):
+    return transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    ])(ldr).cuda()
+
+def unpreprocess_ldr(ldr):
+    ldr = (ldr + 1) / 2
+    return (ldr.permute(1, 2, 0)).cpu().numpy()
+
+def preprocess_hdr(hdr):
+    hdr = torch.from_numpy(hdr).cuda().permute(2, 0, 1)
+    return transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(hdr).flip(0)
+
+def unpreprocess_hdr(hdr):
+    hdr = ((hdr + 1) / 2).flip(0)
+    return hdr.permute(1, 2, 0).cpu().numpy()
 
 def write_hdr(hdr_image, path):
     """ Writing HDR image in radiance (.hdr) format """

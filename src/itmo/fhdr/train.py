@@ -2,19 +2,16 @@
 Script for training the FHDR model.
 """
 
-import os
 import time
 
-import numpy as np
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from data_loader import HDRDataset
-from model import FHDR
-from options import Options
-from util import (
+from .data_loader import HDRDataset
+from .model import FHDR
+from .options import Options
+from .util import (
     load_checkpoint,
     make_required_directories,
     mu_tonemap,
@@ -23,7 +20,7 @@ from util import (
     save_ldr_image,
     update_lr,
 )
-from vgg import VGGLoss
+from .vgg import VGGLoss
 
 
 def weights_init(m):
