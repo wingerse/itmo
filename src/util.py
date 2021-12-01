@@ -16,3 +16,9 @@ def save_hdr_image(img, path):
 
 def save_ldr_image(img, path):
     save_image(img * 255, path)
+
+def remove_gamma(img):
+    return img ** 2.2
+
+def apply_gamma(img):
+    return img ** (1/2.2)

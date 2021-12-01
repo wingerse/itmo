@@ -1,11 +1,11 @@
 from itmo.fhdr.fhdr import fhdr
-from util import load_image, save_hdr_image
+from util import load_image, save_ldr_image
+from tmo.reinhard import reinhard
 
 generated, psnr, ssim = fhdr(
-    load_image("./itmo/fhdr/dataset/test/LDR/ldr_ldr_184_data.jpg"), 
-    load_image("./itmo/fhdr/dataset/test/HDR/real_ldr_184_data.hdr"),
+    load_image("../images/ldr_test3.jpg"), 
+    load_image("../images/hdr_test3.hdr"),
     "./itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
 
 print(f"PSNR={psnr}, SSIM={ssim}")
-print(generated.min(), generated.max())
-save_hdr_image(generated, "gen.hdr")
+save_ldr_image(reinhard(generated), "gen.png")

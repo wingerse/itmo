@@ -5,11 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Test",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/itmo/test.py",
-            "args": ["--ckpt_path", "checkpoints/FHDR-iter-2.ckpt", "--log_scores"],
+            "args": [
+                "--ckpt_path",
+                "checkpoints/FHDR-iter-2.ckpt",
+                "--log_scores"
+            ],
             "cwd": "${workspaceFolder}/itmo",
             "console": "integratedTerminal"
         }
