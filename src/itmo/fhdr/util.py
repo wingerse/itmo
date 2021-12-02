@@ -40,11 +40,11 @@ def preprocess_ldr(ldr):
     return transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])(ldr).cuda()
+    ])((ldr * 255).astype(np.uint8)).cuda()
 
 def unpreprocess_ldr(ldr):
     ldr = (ldr + 1) / 2
-    return (ldr.permute(1, 2, 0)).cpu().numpy()
+    return (ldr.permute(1, 2, 0)).cpu().numpy() 
 
 def preprocess_hdr(hdr):
     hdr = torch.from_numpy(hdr).cuda().permute(2, 0, 1)
