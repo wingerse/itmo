@@ -1,6 +1,6 @@
 import numpy as np
 
-eps = np.nextafter(0, 1)
+eps = np.nextafter(0, 1, dtype=np.float32)
 
 def logmean(img):
     """ geometric mean (logmean) of image """
