@@ -18,20 +18,22 @@ def logPSNR(testImageArray, referenceImageArray):
 
     testImageLuminance = np.max(testImageArray,Lmin)
     # print(testImageLuminance, "bef")
-    for i in range(len(testImageLuminance)):
-        logVal=log10(testImageLuminance[i])
-        testImageLuminance[i] = logVal
+    # for i in range(len(testImageLuminance)):
+    #     logVal=log10(testImageLuminance[i])
+    #     testImageLuminance[i] = logVal
     # print(testImageLuminance, "aft")
 
     referenceImageLuminance = np.max(referenceImageArray, Lmin)
     # print(referenceImageLuminance, "befref")
 
-    for i in range(len(referenceImageLuminance)):
-        logVal=log10(referenceImageLuminance[i])
-        referenceImageLuminance[i] = logVal
+    # for i in range(len(referenceImageLuminance)):
+    #     logVal=log10(referenceImageLuminance[i])
+    #     referenceImageLuminance[i] = logVal
     # print(referenceImageLuminance, "aftref")
     # print(referenceImageLuminance, "referenceluminance")
-    mse = np.mean((testImageLuminance -referenceImageLuminance) ** 2)
+
+
+    mse = np.mean((np.log10(testImageLuminance) - np.log10(referenceImageLuminance)) ** 2)
     if (mse == 0):  # means that no noise present, logPSNR serves no importance here
         return 100
     Lmax = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
