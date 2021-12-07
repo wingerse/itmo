@@ -27,7 +27,7 @@ histogram_array = histogram_array/num_pixels
 
 #cumulative histogram
 chistogram_array = np.cumsum(histogram_array)
-
+transform_map = np.floor(255 * chistogram_array).astype(np.uint8)
 
 # flatten image array into 1D list
 img_list = list(img_array.flatten())
@@ -69,3 +69,43 @@ plt.legend(['Original','Equalized'])
 eq_img = Image.fromarray(eq_img_array, mode='L')
 eq_img.save(save_filename)
 
+
+
+import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+
+def histogram_equalization(img):
+    img = cv.imread(img)
+
+    img_yuv = cv.cvtColor(img, cv.COLOR_BGR2YUV)
+
+    # equalize the histogram of the Y channel
+    img_yuv[:, :, 0] = cv.equalizeHist(img_yuv[:, :, 0])
+
+    # convert the YUV image back to RGB format
+    img_output = cv.cvtColor(img_yuv, cv.COLOR_YUV2BGR)
+
+    show_image_comparison(img, img_output)
+    show_plot(img)
+    show_plot(img_output)
+    return img
+
+def show_plot(img):
+    hist, bins = np.histogram(img.flatten(), 256, [0, 256])
+    cdf = hist.cumsum()
+    cdf_normalized = cdf * float(hist.max()) / cdf.max()
+    plt.plot(cdf_normalized, color='b')
+    plt.hist(img.flatten(), 256, [0, 256], color='r')
+    plt.xlim([0, 256])
+    plt.legend(('cdf', 'histogram'), loc='upper left')
+    plt.show()
+    return
+
+def show_image_comparison(img, img_output):
+    cv.imshow('Color input image', img)
+    cv.imshow('Histogram equalized', img_output)
+    # cv.imshow("equalizeHist", np.hstack((img, img_output)))
+    return
+
+histogram_equalization('ldr_test.png')
