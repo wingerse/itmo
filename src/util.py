@@ -13,7 +13,7 @@ def load_ldr_image(path):
     return i / 255
 
 def load_hdr_image(path):
-    return _load_image(path)
+    return _load_image(path).clip(0, None)
 
 def _save_image(img, path):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
