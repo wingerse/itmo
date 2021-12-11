@@ -100,11 +100,17 @@ struct Params
 // The virtual camera that performs processing and augmentation
 struct VirtualCamera
 {
-    VirtualCamera(string fname_i, int k, Params *P_i)
+    Mat host_im, host_roi, host_roi8;
+    Params *P;
+    string fname;
+    int N, count, sz[3], N_bins;
+    float *range, sigmoid_n, sigmoid_a;
+
+    VirtualCamera(string fname_i, int count, Params *P_i)
     {
         N_bins = 256;
         P = P_i;
-        K = k;
+        this->count = count;
         fname = fname_i;
         N = 10;
         sz[0] = sz[1] = sz[2] = 0;
@@ -155,19 +161,19 @@ struct VirtualCamera
 
 
     // Print HDR image as binary RAW data
-    void printHDR(int k=1)
+    void printHDR()
     {
         char str[500];
-        sprintf(str, "%s/hdr/%06d.hdr", P->opath.c_str(), K * k);
+        sprintf(str, "%s/hdr/%06d.hdr", P->opath.c_str(), count);
 
         imwrite(str, host_roi);
     }
 
     // Print JPEG with random compression/quality
-    void printLDR(int k=1)
+    void printLDR()
     {
         char str[500];
-        sprintf(str, "%s/ldr/%06d.jpg", P->opath.c_str(), K * k);
+        sprintf(str, "%s/ldr/%06d.jpg", P->opath.c_str(), count);
 
         // Write JPG compressed LDR image
         host_roi.convertTo(host_roi8, CV_8UC3, 255.0f);
@@ -179,18 +185,18 @@ struct VirtualCamera
 
 
     // Perform the data augmentation
-    void run()
+    int run()
     {
         //printf("%s\n", fname.c_str());
 
         if (!read())
-            return;
+            return 0;
 
         if (sz[0] < P->ss[0] || sz[1] < P->ss[1])
         {
             printf("ERROR: Image too small (%s)", fname.c_str());
             printf("    Im size = [%d,%d]\n", sz[1], sz[0]);
-            return;
+            return 0;
         }
 
         Scalar m_sc;
@@ -296,8 +302,10 @@ struct VirtualCamera
 
                 cvtColor(host_roi, host_roi, COLOR_RGB2BGR);
 
+                count++;
+
                 // Print output HDR image
-                printHDR(k+1);
+                printHDR();
 
                 // Apply camera curve
                 sigmoid_n = min(2.5f, max(0.2f, P->distribution_sign(P->generator)));
@@ -307,7 +315,7 @@ struct VirtualCamera
                 multiply(host_roi, (1.0 + sigmoid_a)*Scalar(1,1,1), host_roi);
 
                 // Print output LDR image
-                printLDR(k+1);
+                printLDR();
             }
             catch (exception& e)
             {
@@ -316,13 +324,9 @@ struct VirtualCamera
                 printf("%d: Im size = [%d,%d], Crop = [%d,%d,%d,%d]\n", k, sz[1], sz[0], xo, yo, sx, sy);
             }
         }
+
+        return count;
     }
-    
-    Mat host_im, host_roi, host_roi8;
-    Params *P;
-    string fname;
-    int N, K, sz[3], N_bins;
-    float *range, sigmoid_n, sigmoid_a;
 };
 
 
@@ -400,15 +404,15 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_MONOTONIC, &start);
     fprintf(stderr, "Processing ");
 
+    int count = 0;
     // Data processing loop
     for (unsigned int k=0; k<fnames.size(); k++)
     {
-        if ((k % max(1, int(fnames.size()/20))) == 0 && k>0)
-            fprintf(stderr, ".");
+        printf("%d/%d\n", k, (int)fnames.size());
         
         // Augment the image by means of the virtual camera
-        VirtualCamera bp(fnames.at(k), k+1, &P);
-        bp.run();
+        VirtualCamera bp(fnames.at(k), count, &P);
+        count = bp.run();
     }
     printf(" done\n");
 
