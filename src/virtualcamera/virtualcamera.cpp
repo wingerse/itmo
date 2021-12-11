@@ -130,7 +130,7 @@ struct VirtualCamera
     // Read an input image
     bool read()
     {
-        host_im = cv::imread(fname.c_str(), CV_LOAD_IMAGE_COLOR|CV_LOAD_IMAGE_ANYDEPTH);
+        host_im = cv::imread(fname.c_str(), IMREAD_COLOR|IMREAD_ANYDEPTH);
         sz[0] = host_im.rows; sz[1] = host_im.cols; sz[2] = host_im.channels();
 
         // If needed, convert to float and normalize
@@ -146,7 +146,7 @@ struct VirtualCamera
             multiply(host_im, (1.0f/ma) * Scalar(1,1,1), host_im);
         }
 
-        cv::cvtColor(host_im, host_im, CV_BGR2RGB, 0);
+        cv::cvtColor(host_im, host_im, COLOR_BGR2RGB, 0);
 
         init();
 
@@ -158,31 +158,21 @@ struct VirtualCamera
     void printHDR(int k=1)
     {
         char str[500];
-        sprintf(str, "%s/bin/im_%06d_%06d.bin", P->opath.c_str(), K, k);
-        ofstream os(str);
+        sprintf(str, "%s/hdr/%06d.hdr", P->opath.c_str(), K * k);
 
-        // Write metadata
-        float sz_f[5];
-        sz_f[0] = P->ss[0]; sz_f[1] = P->ss[1]; sz_f[2] = P->ss[2];
-        sz_f[3] = sigmoid_n; sz_f[4] = sigmoid_a;
-        os.write((char*) &sz_f[0], 5*sizeof(float));
-
-        // Write HDR image
-        os.write((char*) &host_roi.data[0], P->ss[0]*P->ss[1]*P->ss[2]*sizeof(float));
-        os.close();
+        imwrite(str, host_roi);
     }
 
     // Print JPEG with random compression/quality
     void printLDR(int k=1)
     {
         char str[500];
-        sprintf(str, "%s/jpg/im_%06d_%06d.jpg", P->opath.c_str(), K, k);
+        sprintf(str, "%s/ldr/%06d.jpg", P->opath.c_str(), K * k);
 
         // Write JPG compressed LDR image
         host_roi.convertTo(host_roi8, CV_8UC3, 255.0f);
-        cvtColor(host_roi8, host_roi8, CV_BGR2RGB);
         std::vector<int> compression_params;
-        compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+        compression_params.push_back(IMWRITE_JPEG_QUALITY);
         compression_params.push_back(min(P->jpgQ + rand() % (105-P->jpgQ), 100));
         imwrite(str, host_roi8, compression_params);
     }
@@ -259,7 +249,7 @@ struct VirtualCamera
                 // P->clip[0] and P->clip[1]. This means that upon clipping the scaled
                 // image at 1, there will be 100(1-cl) pixels that are saturated in the
                 // final LDR images.
-                float c = 0, c0;
+                float c = 0, c0 = 0;
                 for (i=0; i<N_bins; i++)
                 {
                     c0 = c;
@@ -286,14 +276,14 @@ struct VirtualCamera
 
                     float hue = P->distribution_hue(P->generator);
                     float sat = P->distribution_sat(P->generator);
-                    cvtColor(host_roi,host_roi,CV_RGB2HSV);
+                    cvtColor(host_roi,host_roi, COLOR_RGB2HSV);
 
                     std::vector<cv::Mat> planes(3);
                     cv::split(host_roi, planes);
                     planes[0] += hue;
                     planes[1] += sat;
                     merge(planes,host_roi);
-                    cvtColor(host_roi,host_roi,CV_HSV2RGB);
+                    cvtColor(host_roi,host_roi, COLOR_HSV2RGB);
 
                     pow(host_roi, 2.0, host_roi);
                 }
@@ -303,6 +293,8 @@ struct VirtualCamera
                 assert(ma > mi && ma > 0);
                 max(host_roi, 1e-5, host_roi);
                 min(host_roi, 1e10, host_roi);
+
+                cvtColor(host_roi, host_roi, COLOR_RGB2BGR);
 
                 // Print output HDR image
                 printHDR(k+1);
@@ -399,9 +391,9 @@ int main(int argc, char *argv[])
     // Create output directories if do not exist
     if (!VCUtil::createDir(P.opath.c_str())) return -1;
     char str[500];
-    sprintf(str, "%s/bin", P.opath.c_str());
+    sprintf(str, "%s/hdr", P.opath.c_str());
     if (!VCUtil::createDir(str)) return -1;
-    sprintf(str, "%s/jpg", P.opath.c_str());
+    sprintf(str, "%s/ldr", P.opath.c_str());
     if (!VCUtil::createDir(str)) return -1;
 
 
