@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+import gc
 
 class FHDR(nn.Module):
     def __init__(self, iteration_count):
@@ -33,6 +34,7 @@ class FHDR(nn.Module):
             FDF = fb_out + feb1
 
             hrb1 = F.relu(self.hrb1(FDF))
+            del FDF
             out = self.hrb2(self.reflect_pad(hrb1))
             out = self.tanh(out)
             outs.append(out)
@@ -59,14 +61,14 @@ class FeedbackBlock(nn.Module):
             self.last_hidden.copy_(x)
             self.should_reset = False
 
-        out1 = torch.cat((x, self.last_hidden), dim=1)
-        out2 = self.compress_in(out1)
+        out = torch.cat((x, self.last_hidden), dim=1)
+        out = self.compress_in(out)
 
-        out3 = self.DRDB1(out2)
-        out4 = self.DRDB2(out3)
-        out5 = self.DRDB3(out4)
+        out = self.DRDB1(out)
+        out = self.DRDB2(out)
+        out = self.DRDB3(out)
 
-        out = F.relu(self.GFF_3x3(out5))
+        out = F.relu(self.GFF_3x3(out))
         self.last_hidden = out
         self.last_hidden = Variable(self.last_hidden.data)
 
@@ -95,9 +97,9 @@ class DilatedResidualDenseBlock(nn.Module):
             self.last_hidden.copy_(x)
             self.should_reset = False
 
-        cat = torch.cat((x, self.last_hidden), dim=1)
+        out = torch.cat((x, self.last_hidden), dim=1)
 
-        out = self.compress(cat)
+        out = self.compress(out)
         out = self.dense_layers(out)
         out = self.conv_1x1(out)
 
