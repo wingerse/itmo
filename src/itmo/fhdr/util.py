@@ -108,14 +108,12 @@ def save_checkpoint(epoch, model):
     print("Saved checkpoint for epoch ", epoch)
 
 
-def update_lr(optimizer, epoch, opt):
-    """ Linearly decaying model learning rate after specified (opt.lr_decay_after) epochs """
+def update_lr(optimizer, epoch, epochs, lr, lr_decay_after):
+    """ Linearly decaying model learning rate after specified lr_decay_after epochs """
 
-    new_lr = opt.lr - opt.lr * (epoch - opt.lr_decay_after) / (
-        opt.epochs - opt.lr_decay_after
-    )
+    lr -= lr*(epoch - lr_decay_after)/(epochs - lr_decay_after)
 
     for param_group in optimizer.param_groups:
-        param_group["lr"] = new_lr
+        param_group["lr"] = lr
 
-    print("Learning rate decayed. Updated LR is: %.6f" % new_lr)
+    return lr

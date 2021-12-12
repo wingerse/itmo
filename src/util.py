@@ -4,7 +4,7 @@ import numpy as np
 def _load_image(path):
     i = cv2.imread(path, cv2.IMREAD_UNCHANGED)
     if i is None:
-        raise Exception("invalid path")
+        raise Exception(f"invalid path: {path}")
     i = cv2.cvtColor(i, cv2.COLOR_BGR2RGB)
     return i
 

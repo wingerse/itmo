@@ -3,11 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-
 class FHDR(nn.Module):
     def __init__(self, iteration_count):
-        super(FHDR, self).__init__()
-        print("FHDR model initialised")
+        super().__init__()
 
         self.iteration_count = iteration_count
 
@@ -44,7 +42,7 @@ class FHDR(nn.Module):
 
 class FeedbackBlock(nn.Module):
     def __init__(self):
-        super(FeedbackBlock, self).__init__()
+        super().__init__()
 
         self.compress_in = nn.Conv2d(128, 64, kernel_size=1, padding=0)
         self.DRDB1 = DilatedResidualDenseBlock()
@@ -77,7 +75,7 @@ class FeedbackBlock(nn.Module):
 
 class DilatedResidualDenseBlock(nn.Module):
     def __init__(self, nDenselayer=4, growthRate=32):
-        super(DilatedResidualDenseBlock, self).__init__()
+        super().__init__()
 
         nChannels_ = 64
         modules = []
@@ -111,7 +109,7 @@ class DilatedResidualDenseBlock(nn.Module):
 
 class make_dense(nn.Module):
     def __init__(self, nChannels, growthRate, kernel_size=3):
-        super(make_dense, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(
             nChannels,
             growthRate,

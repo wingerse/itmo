@@ -5,8 +5,8 @@ from skimage.metrics import structural_similarity
 import numpy as np
 from .util import mu_tonemap, preprocess_ldr, preprocess_hdr, unpreprocess_hdr
 
-def fhdr(ldr, gt_hdr, ckpt_path):
-    model = FHDR(1)
+def fhdr(ldr, gt_hdr, ckpt_path, iteration_count=1):
+    model = FHDR(iteration_count)
     torch.cuda.set_device(0)
     model.cuda()
 
