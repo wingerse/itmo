@@ -85,7 +85,8 @@ struct Params
     }
     
     bool linearize;
-    int K, ss[3], jpgQ;
+    int ss[3], jpgQ;
+    float K;
     string ipath, opath;
     float imsc[2], clip[2], noise[2], hue[2], sat[2], sigmoid_n[2], sigmoid_a[2];
 
@@ -373,7 +374,7 @@ int main(int argc, char *argv[])
     printf("\tHue mean/std:       %0.4f/%0.4f\n", P.hue[0], P.hue[1]);
     printf("\tSat mean/std:       %0.4f/%0.4f\n", P.sat[0], P.sat[1]);
     printf("\tMin JPEG quality:   %d\n", P.jpgQ);
-    printf("\tSub images:         %d (in a 1 mega-pixel image)\n", P.K);
+    printf("\tSub images:         %f (in a 1 mega-pixel image)\n", P.K);
     printf("\tLinearize input:    %d\n", P.linearize);
     printf("\tSeed random gen.:   %d\n\n", rand_sampl);
 

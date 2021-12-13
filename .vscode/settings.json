@@ -6,5 +6,9 @@
         "**/.hg/store/**": true,
         "**/images/**": true,
         "**/src/itmo/fhdr/dataset/**": true,
+    },
+    "files.associations": {
+        "random": "cpp",
+        "*.tcc": "cpp"
     }
 }
