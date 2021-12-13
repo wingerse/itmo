@@ -6,7 +6,7 @@ def _load_image(path):
     if i is None:
         raise Exception(f"invalid path: {path}")
     i = cv2.cvtColor(i, cv2.COLOR_BGR2RGB)
-    return i
+    return i.astype(np.float32)
 
 def load_ldr_image(path):
     i = _load_image(path)
@@ -20,7 +20,7 @@ def _save_image(img, path):
     cv2.imwrite(path, img)
 
 def save_hdr_image(img, path):
-    _save_image(img.astype(np.float32), path)
+    _save_image(img, path)
 
 def save_ldr_image(img, path):
     _save_image((img * 255).astype(np.uint8), path)

@@ -30,7 +30,7 @@ def fhdr(ldr, gt_hdr, ckpt_path, iteration_count=1):
         real = unpreprocess_hdr(gt_hdr)
 
         # calculating SSIM score
-        ssim = structural_similarity(generated, real, multichannel=True)
+        ssim = structural_similarity(generated, real, channel_axis=2)
 
         return (generated, psnr, ssim)
 

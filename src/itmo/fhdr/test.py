@@ -56,7 +56,7 @@ def test(checkpoint_path, dataset_path, output_path, batch_size=1, iteration_cou
                 psnr += 10 * np.log10(1 / mse.item())
 
                 # calculating SSIM score
-                ssim += structural_similarity(output_u, gt_hdr_u, multichannel=True)
+                ssim += structural_similarity(output_u, gt_hdr_u, channel_axis=2)
     
     psnr /= len(dataset)
     ssim /= len(dataset)
