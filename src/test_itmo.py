@@ -5,7 +5,7 @@ import numpy as np
 
 ldr = load_ldr_image("../images/ldr_test3.jpg")
 gt = load_hdr_image("../images/hdr_test3.hdr")
-hdr, psnr, ssim = fhdr(ldr, gt, "itmo/fhdr/checkpoints/FHDR-iter-2.ckpt", iteration_count=2)
+hdr, psnr, ssim = fhdr(ldr, gt, "itmo/fhdr/checkpoints/latest.ckpt", iteration_count=2)
 save_hdr_image(hdr, "test_output/fhdr.hdr")
 hdr_t = drago(hdr)
 save_ldr_image(hdr_t, "test_output/fhdr.jpg")
