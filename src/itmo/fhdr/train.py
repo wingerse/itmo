@@ -38,6 +38,7 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
     for epoch in range(epochs + 1):
         print(f"Epoch {epoch}")
         epoch_start = time.time()
+        epoch_loss = 0
 
         # check whether LR needs to be updated
         if epoch > lr_decay_after:
@@ -72,6 +73,7 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
 
             # FHDR loss function
             loss = l1_loss + (vgg_loss * 10)
+            epoch_loss += loss.item()
 
             # output is the final reconstructed image i.e. last in the array of outputs of n iterations
             output = output[-1]
@@ -82,10 +84,11 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
 
             print(f"epoch: {epoch}, batch: {batch}, loss: {loss.item()}")
 
+        epoch_loss /= len(dataset)
         epoch_finish = time.time()
         time_taken = (epoch_finish - epoch_start) / 60
 
-        print(f"End of epoch {epoch}. Time taken: {time_taken:.2} minutes.")
+        print(f"End of epoch {epoch}. Time taken: {time_taken:.2} minutes. Loss: {epoch_loss}")
 
         torch.save(model.state_dict(), os.path.join(checkpoint_path, f"{epoch}.ckpt"))
     
