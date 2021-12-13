@@ -33,7 +33,8 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
 
     model.apply(weights_init)
 
-    for epoch in trange(epochs + 1, desc="Epoch %"):
+    for epoch in range(epochs + 1):
+        print(f"Epoch {epoch}")
         epoch_start = time.time()
 
         # check whether LR needs to be updated
