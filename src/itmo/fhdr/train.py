@@ -3,7 +3,7 @@ import os
 
 import torch
 from torch.utils.data import DataLoader
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
 from .dataset import HDRDataset
 from .model import FHDR
@@ -15,7 +15,7 @@ def weights_init(m):
         m.weight.data.normal_(0.0, 0.0)
 
 def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0002, epochs=200, lr_decay_after=100):
-    os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
+    os.makedirs(checkpoint_path, exist_ok=True)
 
     dataset = HDRDataset(dataset_path, batch_size)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
@@ -87,7 +87,7 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
 
         print(f"End of epoch {epoch}. Time taken: {time_taken:.2} minutes.")
 
-        torch.save(model.state_dict(), checkpoint_path)
+        torch.save(model.state_dict(), os.path.join(checkpoint_path, f"{epoch}.ckpt"))
     
     time_taken = (time.time() - start) / 60
     print(f"Done. Time taken: {time_taken:.2} minutes")
