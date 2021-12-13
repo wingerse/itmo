@@ -59,8 +59,8 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
             for batch, data in enumerate(tqdm(data_loader, desc="Batch %")):
                 optimizer.zero_grad(set_to_none=True)
 
-                input = data[0]
-                gt_hdr = data[1]
+                input = data[0].cuda()
+                gt_hdr = data[1].cuda()
                 gt_t = mu_tonemap(gt_hdr)
 
                 # forward pass ->
