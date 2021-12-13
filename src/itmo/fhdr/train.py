@@ -22,7 +22,7 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
     os.makedirs(checkpoint_path, exist_ok=True)
 
     dataset = HDRDataset(dataset_path, batch_size)
-    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, multiprocessing_context="spawn")
 
     model = FHDR(iteration_count)
 
