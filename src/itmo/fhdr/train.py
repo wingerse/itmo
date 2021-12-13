@@ -33,6 +33,8 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
 
     model.apply(weights_init)
 
+    start = time.time()
+
     for epoch in range(epochs + 1):
         print(f"Epoch {epoch}")
         epoch_start = time.time()
@@ -83,6 +85,9 @@ def train(checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0
         epoch_finish = time.time()
         time_taken = (epoch_finish - epoch_start) / 60
 
-        print(f"End of epoch {epoch}. Time taken: {time_taken} minutes.")
+        print(f"End of epoch {epoch}. Time taken: {time_taken:.2} minutes.")
 
         torch.save(model.state_dict(), checkpoint_path)
+    
+    time_taken = (time.time() - start) / 60
+    print(f"Done. Time taken: {time_taken:.2} minutes")
