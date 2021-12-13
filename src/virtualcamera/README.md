@@ -7,4 +7,4 @@ Install opencv and compile as follows:
 
 # Run
 
-    ./virtualcamera -input_path <hdr_images_path> -output_path <training_pairs_path> -imsize 256 256 3 -subimages 4
+    ./virtualcamera -input_path <hdr_images_path> -output_path <training_pairs_path> -imsize 256 256 3 -subimages 2
