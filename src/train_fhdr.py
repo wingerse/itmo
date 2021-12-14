@@ -1,3 +1,7 @@
 from itmo.fhdr.train import train
+import sys
 
-train("itmo/fhdr/checkpoints", "../datasets/training_data", iteration_count=2, batch_size=6)
+sys.stdout.reconfigure(line_buffering=True)
+
+if __name__ == "__main__":
+    train("itmo/fhdr/checkpoints", "../datasets/training_data", iteration_count=1, batch_size=8)

@@ -13,8 +13,8 @@ def fhdr(ldr, gt_hdr, ckpt_path, iteration_count=1):
     mse_loss = nn.MSELoss()
     model.load_state_dict(torch.load(ckpt_path))
 
-    ldr = preprocess_ldr(ldr)
-    gt_hdr = preprocess_hdr(gt_hdr)
+    ldr = preprocess_ldr(ldr).cuda()
+    gt_hdr = preprocess_hdr(gt_hdr).cuda()
 
     with torch.no_grad():
         input = ldr.unsqueeze(0)
