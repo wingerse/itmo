@@ -2,8 +2,11 @@ import sys
 sys.path.append('../')
 
 import dearpygui.dearpygui as dpg
+from util import save_ldr_image, save_hdr_image
+from tmo import reinhard
 
 def add_and_load_image(image_path, parent=None):
+    """Loads image into a window. Taken from: https://github.com/hoffstadt/DearPyGui/discussions/1072"""
     width, height, channels, data = dpg.load_image(image_path)
 
     with dpg.texture_registry() as reg_id:
@@ -14,27 +17,30 @@ def add_and_load_image(image_path, parent=None):
     else:
         return dpg.add_image(texture_id, parent=parent)
     
-def uploadImage(sender, app_data, user_data):
-    width, height, channels, data = dpg.load_image(app_data['file_path_name'])
-
-    with dpg.texture_registry():
-        texture_id = dpg.add_static_texture(width, height, data)
-
-    with dpg.window(label="Image"):
-        dpg.add_image(texture_id)
+def upload_image(sender, app_data, user_data):
+    """Callback for uploading image"""
     
+    print("sender: ", sender)
+    print("app_data: ", app_data)
+    print("user_data: ", user_data)
+    
+    image_path = app_data['file_path_name']
+    window = user_data
 
-dpg.create_context()
-dpg.create_viewport()
-dpg.setup_dearpygui()
+    add_and_load_image(image_path, parent=window)
 
-with dpg.file_dialog(directory_selector=False, show=False, callback=uploadImage, id="file_dialog_id"):
-    dpg.add_file_extension(".jpg")
-    dpg.add_file_extension(".png")
+if __name__ == '__main__':
+    dpg.create_context()
+    dpg.create_viewport(title="LDR to HDR Converter", width=1500, height= 750, x_pos=0, y_pos=0)
+    dpg.setup_dearpygui()
 
-with dpg.window(label="LDR to HDR Converter"):
-    dpg.add_button(label="Upload Image", callback=lambda: dpg.show_item("file_dialog_id"))
+    with dpg.window(label="LDR to HDR Converter", tag="Main") as main_window:
+        dpg.add_button(label="Upload Image", callback=lambda: dpg.show_item("upload_file_dialog"))
+        
+    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_image, id="upload_file_dialog", user_data=main_window):
+        dpg.add_file_extension("{.png,.jpg}")
 
-dpg.show_viewport()
-dpg.start_dearpygui()
-dpg.destroy_context()
+    dpg.show_viewport()
+    dpg.set_primary_window("Main", True)
+    dpg.start_dearpygui()
+    dpg.destroy_context()
