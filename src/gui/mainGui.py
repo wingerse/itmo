@@ -28,20 +28,25 @@ def add_and_load_image(image_path, parent=None):
 def save_image(sender, app_data, user_data):
     """Callback for saving image"""
     
-    print("SAVED!---------")
     print("sender: ", sender)
     print("app_data: ", app_data)
     print("user_data: ", user_data)
     
-    file_path = app_data['current_path']
-    file_name = app_data['file_name']
-    hdr_name = file_name + ".hdr"
-    ldr_name = file_name + ".png"
-    # get image from user data
-    # save_hdr_image(, hdr_name)
-    # save_ldr_image(reinhard(generated), "gen_fhdr.png")
+    # get generated images from user data
+    generated_hdr = user_data[0]
+    generated_ldr = user_data[1]
+    
+    # prepare file path names for both ldr and hdr
+    file_path_name = app_data['file_path_name']
+    hdr_name = file_path_name + ".hdr"
+    ldr_name = file_path_name + ".png"
+    
+    save_hdr_image(generated_hdr, hdr_name)
+    save_ldr_image(generated_ldr, ldr_name)
     
 def convert_image(sender, app_data, user_data):
+    """ Applying FHDR to convert HDR image to LDR image """
+    
     print("sender: ", sender)
     print("app_data: ", app_data)
     print("user_data: ", user_data)
@@ -62,9 +67,10 @@ def convert_image(sender, app_data, user_data):
     height = generated_ldr.shape[0]
     width = generated_ldr.shape[1]
     
-    with dpg.texture_registry(show=True):
+    with dpg.texture_registry():
         dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgb, tag="generated_ldr")
         
+    dpg.add_text("\nGENERATED\n\n", parent=window)
     dpg.add_image("generated_ldr", parent=window)
     dpg.add_file_dialog(directory_selector=False, show=False, callback=save_image, tag="save_file_dialog", user_data=(generated, generated_ldr))
     dpg.add_button(label="Save Image", parent=window, callback=lambda: dpg.show_item("save_file_dialog"))
@@ -97,9 +103,19 @@ def upload_hdr(sender, app_data, user_data):
     images.hdr = load_hdr_image(image_path)
     images.hdr_flag = True
     window = user_data[0]
-
-    dpg.add_text("\nHDR REFERENCE\n\n", parent=window)
-    add_and_load_image(image_path, parent=window) 
+    
+    # convert hdr to ldr for better display
+    reference_hdr = reinhard(images.hdr)
+    
+    # height, width of reference hdr image
+    height = reference_hdr.shape[0]
+    width = reference_hdr.shape[1]
+    
+    with dpg.texture_registry():
+        dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgb, tag="reference_hdr")
+     
+    dpg.add_text("\nHDR REFERENCE\n\n", parent=window)   
+    dpg.add_image("reference_hdr", parent=window)    
 
 if __name__ == '__main__':
     
