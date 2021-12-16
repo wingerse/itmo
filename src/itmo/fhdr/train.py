@@ -91,8 +91,6 @@ def train(
             loss.backward()
             optimizer.step()
 
-            print(f"epoch: {epoch}, batch: {batch}, loss: {loss.item()}")
-
         epoch_loss /= len(dataset) / batch_size
         epoch_finish = time.time()
         time_taken = (epoch_finish - epoch_start) / 60
