@@ -16,7 +16,7 @@ def weights_init(m):
 
 def train(
     checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0002, epochs=200, lr_decay_after=100,
-    resume_epoch=None,
+    resume_epoch=1,
 ):
     os.makedirs(checkpoint_path, exist_ok=True)
 
@@ -35,9 +35,9 @@ def train(
     perceptual_loss = VGGLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
 
-    if resume_epoch is not None:
-        model.load_state_dict(torch.load(os.path.join(checkpoint_path, f"epoch_{resume_epoch}.ckpt")))
-        start_epoch = resume_epoch + 1
+    if resume_epoch != 1:
+        model.load_state_dict(torch.load(os.path.join(checkpoint_path, f"epoch_{resume_epoch-1}.ckpt")))
+        start_epoch = resume_epoch
     else:
         model.apply(weights_init)
         start_epoch = 1
@@ -54,7 +54,7 @@ def train(
             update_lr(optimizer, epoch, epochs, lr, lr_decay_after)
 
         for batch, data in enumerate(tqdm(data_loader, desc="Batch %")):
-            optimizer.zero_grad(set_to_none=True)
+            optimizer.zero_grad()
 
             input = data[0].cuda()
             gt_hdr = data[1].cuda()

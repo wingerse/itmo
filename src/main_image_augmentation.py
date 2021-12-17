@@ -14,7 +14,7 @@ if __name__ == "__main__":
     count = 0
     for hdr_path in tqdm(hdrs):
         hdr = load_hdr_image(hdr_path)
-        aug = augment_images(hdr, 1.8, 256)
+        aug = augment_images(hdr, 1.6, 256)
         for ldr, hdr in aug:
             count += 1
             save_ldr_image(ldr, os.path.join(output_path, "ldr", f"{count}.jpg"))
