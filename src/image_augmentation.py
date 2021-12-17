@@ -36,10 +36,10 @@ def change_exposure(img):
     edge = inverse_log_tonemap(edge, max_)
 
     if bright:
-        img /= edge
+        img = img / edge
         img = img.clip(0, 1)
     else:
-        img -= edge
+        img = img - edge
         img = img.clip(0, None)
         img /= img.max()
     return img
