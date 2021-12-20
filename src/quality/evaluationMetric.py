@@ -1,69 +1,89 @@
-
-
-from math import log10
+from math import log10, sqrt
 import imageio
 import os
 import cv2
 import numpy as np
+from skimage.metrics import structural_similarity
 
 from fyp.src import util
 
-def luminanceConversion(R, G, B):
-    luminance = format(0.27*R + 0.67*G + 0.06*B, '.12g')
-    return luminance
+def logPSNR(testImageHdrLuminance, referenceImageHdrLuminance):
+    """
 
-def logPSNR(testImageArray, referenceImageArray):
+    :param testImageHdr: HDR image generated after passing an ldr image through the itmo algorithm
+    :param referenceImageHdr: HDR ground truth image to be compared with
+    :return: logPSNR value denoting the quality of the test image compared to the reference image. The higher the logPSNR value,
+             the closer is the test Image to the ground truth.
+    Note: The formula for logPSNR was taken from Kai Linn's thesis chapter 2 page 34
+    """
     Lmin =0
-    # print(referenceImage)
+    testImageHdrMax = np.max(testImageHdrLuminance,Lmin)
 
-    testImageLuminance = np.max(testImageArray,Lmin)
-    # print(testImageLuminance, "bef")
-    # for i in range(len(testImageLuminance)):
-    #     logVal=log10(testImageLuminance[i])
-    #     testImageLuminance[i] = logVal
-    # print(testImageLuminance, "aft")
+    referenceImageHdrMax = np.max(referenceImageHdrLuminance, Lmin)
 
-    referenceImageLuminance = np.max(referenceImageArray, Lmin)
-    # print(referenceImageLuminance, "befref")
-
-    # for i in range(len(referenceImageLuminance)):
-    #     logVal=log10(referenceImageLuminance[i])
-    #     referenceImageLuminance[i] = logVal
-    # print(referenceImageLuminance, "aftref")
-    # print(referenceImageLuminance, "referenceluminance")
-
-
-    mse = np.mean((np.log10(testImageLuminance) - np.log10(referenceImageLuminance)) ** 2)
+    mse = np.mean((np.log10(testImageHdrMax) - np.log10(referenceImageHdrMax)) ** 2)
     if (mse == 0):  # means that no noise present, logPSNR serves no importance here
         return 100
     Lmax = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
     logPsnr = 10 * log10(log10(Lmax)/mse)
     return logPsnr
 
+
+def SSIM(testImageTonemapped, referenceImageTonemapped):
+    """
+    This function computes the structural similarity difference between the test image and the reference image.
+    It is a measure of the perceptual difference between the two images. The value ranges from 0 to 1 and the closer the value is to 1,
+    the closer is the generated image from the ground truth image.
+    :param testImageTonemapped: ldr format after tonemapping  the generated hdr image
+    :param referenceImageTonemapped: ldr format after tonemapping  the ground truth hdr image
+    :return: the SSIM score
+    """
+    return structural_similarity(testImageTonemapped,referenceImageTonemapped, multichannel=True)
+
+
+
+def PSNR(testImageTonemapped, referenceImageTonemapped):
+    """
+    code adapted from https://github.com/jackfrued/Python-1/blob/master/analysis/compression_analysis/psnr.py
+
+    This function computes the peak singnal-to-noise ratio of the tonemapped generated image and that of the tonemapped ground truth image.
+    Used to measure the quality of the generated image compared to the ground truth. The higher the value, the better is the measurement.
+    :param testImageTonemapped:ldr format after tonemapping  the generated hdr image
+    :param referenceImageTonemapped: ldr format after tonemapping  the ground truth hdr image
+    :return: the PSNR value
+    """
+
+    mse = np.mean((testImageTonemapped - referenceImageTonemapped) ** 2)
+    if (mse == 0):  # means that no noise present, PSNR serves no importance here
+        return 100
+    PIXEL_MAX = 255.0
+    Psnr = 20 * log10(PIXEL_MAX/sqrt(mse))
+    return Psnr
+
 def main():
 
-    testImage = util.load_hdr_image('./generated_hdr_b_0_0.hdr')
-    # print(testImage.shape[0])
-    testImageArray = np.zeros([testImage.shape[0], testImage.shape[1]])
-    # print('array',testImageArray)
-    for h in range(len(testImage)):
-        for w in range(len(testImage[h])):
-            # print(testImage[h][w])
-            testImageArray[h][w] = luminanceConversion(testImage[h][w][0], testImage[h][w][1], testImage[h][w][2])
-            # print(array[h][w])
 
-    referenceImage = util.load_hdr_image('./gt_hdr_b_0_0.hdr')
-    referenceImageArray = np.zeros([referenceImage.shape[0], referenceImage.shape[1]])
-    # print('array', referenceImageArray)
-    for h in range(len(referenceImage)):
-        for w in range(len(referenceImage[h])):
-            # print(testImage[h][w])
-            referenceImageArray[h][w] = luminanceConversion(referenceImage[h][w][0], referenceImage[h][w][1], referenceImage[h][w][2])
-            # print(array[h][w]
-    # print(referenceImageArray)
+    testImageHdr = util.load_hdr_image('./generated_hdr_b_0_0.hdr')
+    testImageHdrLuminance = util.luminance(testImageHdr)
 
-    print(f"log PSNR value is {logPSNR(testImageArray, referenceImageArray)} dB")
+
+    referenceImageHdr = util.load_hdr_image('./gt_hdr_b_0_0.hdr')
+    referenceImageHdrLuminance = util.luminance(referenceImageHdr)
+
+    print(f"log PSNR value is {logPSNR(testImageHdrLuminance, referenceImageHdrLuminance)} dB")
+
+    testImageTonemapped = util.load_hdr_image('./tmo_generated.jpg')
+    # testImageTonemappedLuminance = util.luminance(testImageTonemapped)
+    #
+    referenceImageTonemapped = util.load_hdr_image('./tmo_gt.jpg')
+    #
+    # referenceImageTonemappedLuminance = util.luminance(referenceImageTonemapped)
+    #
+
+    print(f" SSIM value is {SSIM(testImageTonemapped, referenceImageTonemapped)} ")
+    print(f" PSNR value is {PSNR(testImageTonemapped, referenceImageTonemapped)} dB")
 
 
 if __name__ == '__main__':
     main()
+
