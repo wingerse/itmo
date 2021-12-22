@@ -2,9 +2,12 @@ import sys
 sys.path.append('../')
 
 import dearpygui.dearpygui as dpg
+from theme import global_theme, default_font, title_font, h1, normal_text
 from util import load_ldr_image, load_hdr_image, save_ldr_image, save_hdr_image
 from tmo import reinhard
 from itmo import fhdr
+
+BUTTON_HEIGHT = 40
 
 class Images:
     def __init__(self):
@@ -88,7 +91,6 @@ def upload_ldr(sender, app_data, user_data):
     images.ldr_flag = True
     window = user_data[0]
     
-    dpg.add_text("\nORIGINAL LDR\n\n", parent=window)
     add_and_load_image(image_path, parent=window)
    
 def upload_hdr(sender, app_data, user_data):
@@ -113,8 +115,7 @@ def upload_hdr(sender, app_data, user_data):
     
     with dpg.texture_registry():
         dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgb, tag="reference_hdr")
-     
-    dpg.add_text("\nHDR REFERENCE\n\n", parent=window)   
+       
     dpg.add_image("reference_hdr", parent=window)    
 
 if __name__ == '__main__':
@@ -125,25 +126,66 @@ if __name__ == '__main__':
     dpg.create_viewport(title="LDR to HDR Converter", width=1500, height= 750, x_pos=0, y_pos=0)
     dpg.setup_dearpygui()
 
-    with dpg.window(label="LDR to HDR Converter", tag="Main") as main_window:
-        dpg.add_button(label="Upload LDR Image", callback=lambda: dpg.show_item("upload_ldr_dialog"))
-        dpg.add_button(label="Upload HDR Image", callback=lambda: dpg.show_item("upload_hdr_dialog"))
-        # dpg.add_separator()
-        # dpg.add_spacing()   
+    with dpg.window(label="LDR to HDR Converter", tag="main") as main_window:
+        
+        title = dpg.add_text("LDR to HDR Converter")
+        dpg.add_spacer(height=20)
+        dpg.add_separator()
+        dpg.add_spacer(height=10)
+        instructions = dpg.add_text(("Welcome to our LDR to HDR Image Converter!\n"
+                                    "Start by uploading an LDR image and a reference HDR image. But do make sure\n" 
+                                    "that they are of the same scene. Then simply click the 'Generate' button."))
+        dpg.add_spacer(height=10)
+        dpg.add_separator()
+        dpg.add_spacer(height=10)
+        
+        with dpg.group(horizontal=True):
             
-    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id="upload_ldr_dialog", user_data=(main_window, images)):
+            with dpg.group():
+                
+                with dpg.group() as ldr_container:
+                    ldr_title = dpg.add_text("Original LDR Image")
+                    dpg.add_button(label="Upload LDR Image", callback=lambda: dpg.show_item("upload_ldr_dialog"), width=150, height=BUTTON_HEIGHT)
+                    
+                dpg.add_spacer(height=20)
+                
+                with dpg.group() as hdr_container:
+                    hdr_title = dpg.add_text("HDR Reference Image")
+                    dpg.add_button(label="Upload HDR Image", callback=lambda: dpg.show_item("upload_hdr_dialog"), width=150, height=BUTTON_HEIGHT)
+                                
+            dpg.add_spacer(width=50)
+            
+            with dpg.group(indent=600) as generated_container:
+                generated_title = dpg.add_text("Generated Image")
+                dpg.add_button(label="Generate", tag="generate_button", width=100, height=BUTTON_HEIGHT, enabled=False)   
+            
+    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id="upload_ldr_dialog", user_data=(ldr_container, images)):
         dpg.add_file_extension("{.png,.jpg}")
         
-    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_hdr, id="upload_hdr_dialog", user_data=(main_window, images)):
+    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_hdr, id="upload_hdr_dialog", user_data=(hdr_container, images)):
         dpg.add_file_extension(".hdr")
 
+    dpg.bind_font(default_font)
+    dpg.bind_item_font(title, title_font)
+    dpg.bind_item_font(instructions, normal_text)
+    dpg.bind_item_font(ldr_title, h1)
+    dpg.bind_item_font(hdr_title, h1)
+    dpg.bind_item_font(generated_title, h1)
+    dpg.bind_theme(global_theme)
+    
+    dpg.show_style_editor()
+    
+
     dpg.show_viewport()
-    dpg.set_primary_window("Main", True)
+    dpg.set_primary_window("main", True)
     # dpg.start_dearpygui()
     while dpg.is_dearpygui_running():
         if images.ldr_flag and images.hdr_flag:
-            dpg.add_button(label="Generate", callback=convert_image, parent=main_window, user_data=(main_window, images))
+            dpg.configure_item("generate_button", enabled=True, callback=convert_image, user_data=(generated_container, images))
             images.ldr_flag = False
             images.hdr_flag = False
         dpg.render_dearpygui_frame()
     dpg.destroy_context()
+
+
+
