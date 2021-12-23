@@ -14,7 +14,7 @@ MAX_FRAC = 0.6
 MIN_LOSS = 0.05
 MAX_LOSS = 0.1
 
-def change_exposure(img):
+def change_exposure(img, bright):
     l = luminance(img)
     max_ = l.max()
 
@@ -22,7 +22,6 @@ def change_exposure(img):
     hist, edges = np.histogram(l_d, bins=img.size)
 
     loss = uniform(MIN_LOSS, MAX_LOSS)
-    bright = random() <= 0.5
 
     pixel_count = 0
     edge = None
@@ -66,7 +65,9 @@ def augment(img, size):
     hdr = cv2.resize(img, (size, size), interpolation=cv2.INTER_LINEAR)
     if random() <= 0.5:
         hdr = cv2.flip(hdr, 1)
-    ldr = change_exposure(hdr)
+
+    bright = random() <= 0.5
+    ldr = change_exposure(hdr, bright)
     ldr = crf(ldr)
     ldr = apply_gamma(ldr)
     return ldr, hdr

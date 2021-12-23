@@ -5,8 +5,8 @@ if __name__ == "__main__":
     x = []
     y_psnr = []
     y_ssim = []
-    for i in range(1, 37+1):
-        psnr, ssim = test(f"itmo/fhdr/checkpoints/epoch_{i}.ckpt", "../datasets/testing_data", "test_output/fhdr")
+    for i in range(92, 137+1):
+        psnr, ssim = test(f"itmo/fhdr/checkpoints/epoch_{i}.ckpt", "../datasets/testing_data_ours", "test_output/fhdr")
         x.append(i)
         y_psnr.append(psnr)
         y_ssim.append(ssim)
