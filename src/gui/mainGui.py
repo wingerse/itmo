@@ -8,6 +8,16 @@ from tmo import reinhard
 from itmo import fhdr
 
 BUTTON_HEIGHT = 40
+UPLOAD_LDR_DIALOG = "upload_ldr_dialog"
+UPLOAD_HDR_DIALOG = "upload_hdr_dialog"
+SAVE_FILE_DIALOG = "save_file_dialog"
+SAVE_BUTTON = "save_button"
+ORIGINAL_LDR_ALIAS = "original_ldr"
+REFERENCE_HDR_ALIAS = "hdr_reference"
+GENERATED_ALIAS = "generated"
+LDR_REGISTRY = "ldr_registry"
+HDR_REGISTRY = "hdr_registry"
+GENERATED_REGISTRY = "generated_registry"
 
 class Images:
     def __init__(self):
@@ -31,9 +41,9 @@ def add_and_load_image(image_path, parent=None):
 def save_image(sender, app_data, user_data):
     """Callback for saving image"""
     
-    print("sender: ", sender)
-    print("app_data: ", app_data)
-    print("user_data: ", user_data)
+    # print("sender: ", sender)
+    # print("app_data: ", app_data)
+    # print("user_data: ", user_data)
     
     # get generated images from user data
     generated_hdr = user_data[0]
@@ -50,9 +60,9 @@ def save_image(sender, app_data, user_data):
 def convert_image(sender, app_data, user_data):
     """ Applying FHDR to convert HDR image to LDR image """
     
-    print("sender: ", sender)
-    print("app_data: ", app_data)
-    print("user_data: ", user_data)
+    # print("sender: ", sender)
+    # print("app_data: ", app_data)
+    # print("user_data: ", user_data)
     
     window = user_data[0]
     images = user_data[1]
@@ -62,28 +72,34 @@ def convert_image(sender, app_data, user_data):
     images.hdr,
     ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
 
-    print(generated.min(), generated.max())
-    print(f"PSNR={psnr}, SSIM={ssim}")
+    # print(generated.min(), generated.max())
+    # print(f"PSNR={psnr}, SSIM={ssim}")
     generated_ldr = reinhard(generated)
     
     # height, width, number of channels in generated hdr image
     height = generated_ldr.shape[0]
     width = generated_ldr.shape[1]
     
-    with dpg.texture_registry():
-        dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgb, tag="generated_ldr")
+    if dpg.does_alias_exist(GENERATED_ALIAS):
+        dpg.delete_item(GENERATED_ALIAS)
+        dpg.delete_item(GENERATED_REGISTRY)
+        dpg.delete_item(SAVE_FILE_DIALOG)
+        dpg.delete_item(SAVE_BUTTON)
+    
+    with dpg.texture_registry(tag=GENERATED_REGISTRY):
+        texture_id = dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgb)
         
-    dpg.add_text("\nGENERATED\n\n", parent=window)
-    dpg.add_image("generated_ldr", parent=window)
-    dpg.add_file_dialog(directory_selector=False, show=False, callback=save_image, tag="save_file_dialog", user_data=(generated, generated_ldr))
-    dpg.add_button(label="Save Image", parent=window, callback=lambda: dpg.show_item("save_file_dialog"))
+    dpg.add_image(texture_id, parent=window, tag=GENERATED_ALIAS)
+    with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG, user_data=(generated, generated_ldr)):
+        dpg.add_file_extension("{.png,.jpg,.hdr}")
+    dpg.add_button(label="Save Image", parent=window, width=100, height=BUTTON_HEIGHT, tag=SAVE_BUTTON, callback=lambda: dpg.show_item("save_file_dialog"))
     
 def upload_ldr(sender, app_data, user_data):
     """Callback for uploading image"""
     
-    print("sender: ", sender)
-    print("app_data: ", app_data)
-    print("user_data: ", user_data)
+    # print("sender: ", sender)
+    # print("app_data: ", app_data)
+    # print("user_data: ", user_data)
     
     image_path = app_data['file_path_name']
     images = user_data[1]
@@ -91,14 +107,27 @@ def upload_ldr(sender, app_data, user_data):
     images.ldr_flag = True
     window = user_data[0]
     
-    add_and_load_image(image_path, parent=window)
+    # add_and_load_image(image_path, parent=window)
+    
+    width, height, channels, data = dpg.load_image(image_path)
+    
+    if dpg.does_alias_exist(ORIGINAL_LDR_ALIAS):
+        dpg.delete_item(ORIGINAL_LDR_ALIAS)
+        dpg.delete_item(LDR_REGISTRY)
+        # dpg.remove_alias(ORIGINAL_LDR_ALIAS)
+
+    with dpg.texture_registry(tag=LDR_REGISTRY):
+        texture_id = dpg.add_static_texture(width, height, data)
+
+    dpg.add_image(texture_id, parent=window, tag=ORIGINAL_LDR_ALIAS)
+    
    
 def upload_hdr(sender, app_data, user_data):
     """Callback for uploading hdr reference image"""
     
-    print("sender: ", sender)
-    print("app_data: ", app_data)
-    print("user_data: ", user_data)
+    # print("sender: ", sender)
+    # print("app_data: ", app_data)
+    # print("user_data: ", user_data)
     
     image_path = app_data['file_path_name']
     images = user_data[1]
@@ -109,14 +138,19 @@ def upload_hdr(sender, app_data, user_data):
     # convert hdr to ldr for better display
     reference_hdr = reinhard(images.hdr)
     
-    # height, width of reference hdr image
+    # get height and width of reference hdr image
     height = reference_hdr.shape[0]
     width = reference_hdr.shape[1]
     
-    with dpg.texture_registry():
-        dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgb, tag="reference_hdr")
+    if dpg.does_alias_exist(REFERENCE_HDR_ALIAS):
+        dpg.delete_item(REFERENCE_HDR_ALIAS)
+        dpg.delete_item(HDR_REGISTRY)
+        # dpg.remove_alias(REFERENCE_HDR_ALIAS)
+    
+    with dpg.texture_registry(tag=HDR_REGISTRY):
+        texture_id = dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgb)
        
-    dpg.add_image("reference_hdr", parent=window)    
+    dpg.add_image(texture_id, parent=window, tag=REFERENCE_HDR_ALIAS)    
 
 if __name__ == '__main__':
     
@@ -145,13 +179,13 @@ if __name__ == '__main__':
                 
                 with dpg.group() as ldr_container:
                     ldr_title = dpg.add_text("Original LDR Image")
-                    dpg.add_button(label="Upload LDR Image", callback=lambda: dpg.show_item("upload_ldr_dialog"), width=150, height=BUTTON_HEIGHT)
+                    dpg.add_button(label="Upload LDR Image", callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG), width=150, height=BUTTON_HEIGHT)
                     
                 dpg.add_spacer(height=20)
                 
                 with dpg.group() as hdr_container:
                     hdr_title = dpg.add_text("HDR Reference Image")
-                    dpg.add_button(label="Upload HDR Image", callback=lambda: dpg.show_item("upload_hdr_dialog"), width=150, height=BUTTON_HEIGHT)
+                    dpg.add_button(label="Upload HDR Image", callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG), width=150, height=BUTTON_HEIGHT)
                                 
             dpg.add_spacer(width=50)
             
@@ -159,22 +193,26 @@ if __name__ == '__main__':
                 generated_title = dpg.add_text("Generated Image")
                 dpg.add_button(label="Generate", tag="generate_button", width=100, height=BUTTON_HEIGHT, enabled=False)   
             
-    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id="upload_ldr_dialog", user_data=(ldr_container, images)):
+    # file dialog for uploading LDR image
+    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):
         dpg.add_file_extension("{.png,.jpg}")
         
-    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_hdr, id="upload_hdr_dialog", user_data=(hdr_container, images)):
+    # file dialog for uploading HDR reference image
+    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_hdr, id=UPLOAD_HDR_DIALOG, user_data=(hdr_container, images)):
         dpg.add_file_extension(".hdr")
 
+    # set fonts
     dpg.bind_font(default_font)
     dpg.bind_item_font(title, title_font)
     dpg.bind_item_font(instructions, normal_text)
     dpg.bind_item_font(ldr_title, h1)
     dpg.bind_item_font(hdr_title, h1)
     dpg.bind_item_font(generated_title, h1)
+    
+    # set the theme
     dpg.bind_theme(global_theme)
     
-    dpg.show_style_editor()
-    
+    # dpg.show_style_editor()
 
     dpg.show_viewport()
     dpg.set_primary_window("main", True)
@@ -188,4 +226,23 @@ if __name__ == '__main__':
     dpg.destroy_context()
 
 
+# import dearpygui.dearpygui as dpg
 
+# dpg.create_context()
+
+# with dpg.window(label="Delete Files", modal=True, show=False, id="modal_id", no_title_bar=True):
+#     dpg.add_text("All those beautiful files will be deleted.\nThis operation cannot be undone!")
+#     dpg.add_separator()
+#     dpg.add_checkbox(label="Don't ask me next time")
+#     with dpg.group(horizontal=True):
+#         dpg.add_button(label="OK", width=75, callback=lambda: dpg.configure_item("modal_id", show=False))
+#         dpg.add_button(label="Cancel", width=75, callback=lambda: dpg.configure_item("modal_id", show=False))
+
+# with dpg.window(label="Tutorial"):
+#     dpg.add_button(label="Open Dialog", callback=lambda: dpg.configure_item("modal_id", show=True))
+
+# dpg.create_viewport(title='Custom Title', width=800, height=600)
+# dpg.setup_dearpygui()
+# dpg.show_viewport()
+# dpg.start_dearpygui()
+# dpg.destroy_context()
