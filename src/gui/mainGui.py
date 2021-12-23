@@ -11,6 +11,7 @@ BUTTON_HEIGHT = 40
 UPLOAD_LDR_DIALOG = "upload_ldr_dialog"
 UPLOAD_HDR_DIALOG = "upload_hdr_dialog"
 SAVE_FILE_DIALOG = "save_file_dialog"
+GENERATE_BUTTON = "generate_button"
 SAVE_BUTTON = "save_button"
 ORIGINAL_LDR_ALIAS = "original_ldr"
 REFERENCE_HDR_ALIAS = "hdr_reference"
@@ -83,17 +84,14 @@ def convert_image(sender, app_data, user_data):
     if dpg.does_alias_exist(GENERATED_ALIAS):
         dpg.delete_item(GENERATED_ALIAS)
         dpg.delete_item(GENERATED_REGISTRY)
-        dpg.delete_item(SAVE_FILE_DIALOG)
-        dpg.delete_item(SAVE_BUTTON)
     
     with dpg.texture_registry(tag=GENERATED_REGISTRY):
         texture_id = dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgb)
         
     dpg.add_image(texture_id, parent=window, tag=GENERATED_ALIAS)
-    with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG, user_data=(generated, generated_ldr)):
-        dpg.add_file_extension("{.png,.jpg,.hdr}")
-    dpg.add_button(label="Save Image", parent=window, width=100, height=BUTTON_HEIGHT, tag=SAVE_BUTTON, callback=lambda: dpg.show_item("save_file_dialog"))
-    
+    dpg.configure_item(SAVE_FILE_DIALOG, user_data=(generated, generated_ldr))
+    dpg.configure_item(SAVE_BUTTON, enabled=True)
+
 def upload_ldr(sender, app_data, user_data):
     """Callback for uploading image"""
     
@@ -179,19 +177,22 @@ if __name__ == '__main__':
                 
                 with dpg.group() as ldr_container:
                     ldr_title = dpg.add_text("Original LDR Image")
-                    dpg.add_button(label="Upload LDR Image", callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG), width=150, height=BUTTON_HEIGHT)
+                    dpg.add_button(label="Upload LDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG))
                     
                 dpg.add_spacer(height=20)
                 
                 with dpg.group() as hdr_container:
                     hdr_title = dpg.add_text("HDR Reference Image")
-                    dpg.add_button(label="Upload HDR Image", callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG), width=150, height=BUTTON_HEIGHT)
+                    dpg.add_button(label="Upload HDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG))
                                 
             dpg.add_spacer(width=50)
             
             with dpg.group(indent=600) as generated_container:
                 generated_title = dpg.add_text("Generated Image")
-                dpg.add_button(label="Generate", tag="generate_button", width=100, height=BUTTON_HEIGHT, enabled=False)   
+                
+                with dpg.group(horizontal=True):
+                    dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=convert_image, user_data=(generated_container, images))   
+                    dpg.add_button(label="Save Image", tag=SAVE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=lambda: dpg.show_item("save_file_dialog"))
             
     # file dialog for uploading LDR image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):
@@ -200,6 +201,10 @@ if __name__ == '__main__':
     # file dialog for uploading HDR reference image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_hdr, id=UPLOAD_HDR_DIALOG, user_data=(hdr_container, images)):
         dpg.add_file_extension(".hdr")
+        
+    # file dialog for saving generated images in both ldr and hdr formats
+    with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG):
+        dpg.add_file_extension("{.png,.jpg,.hdr}")
 
     # set fonts
     dpg.bind_font(default_font)
@@ -219,7 +224,7 @@ if __name__ == '__main__':
     # dpg.start_dearpygui()
     while dpg.is_dearpygui_running():
         if images.ldr_flag and images.hdr_flag:
-            dpg.configure_item("generate_button", enabled=True, callback=convert_image, user_data=(generated_container, images))
+            dpg.configure_item(GENERATE_BUTTON, enabled=True)
             images.ldr_flag = False
             images.hdr_flag = False
         dpg.render_dearpygui_frame()
