@@ -31,7 +31,7 @@ def train(
 
     model.cuda()
 
-    l1 = torch.nn.L1Loss()
+    mse = torch.nn.MSELoss()
     perceptual_loss = VGGLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
 
@@ -63,25 +63,25 @@ def train(
             # forward pass ->
             output = model(input)
 
-            l1_loss = 0
+            mse_loss = 0
             vgg_loss = 0
 
             # computing loss for n generated outputs (from n-iterations) ->
             for image in output:
                 image_t = mu_tonemap(image)
-                l1_loss += l1(image_t, gt_t)
+                mse_loss += mse(image_t, gt_t)
                 vgg_loss += perceptual_loss(image_t, gt_t)
 
             # averaged over n iterations
-            l1_loss /= len(output)
+            mse_loss /= len(output)
             vgg_loss /= len(output)
 
             # averaged over batches
-            l1_loss = torch.mean(l1_loss)
+            mse_loss = torch.mean(mse_loss)
             vgg_loss = torch.mean(vgg_loss)
 
             # FHDR loss function
-            loss = l1_loss + (vgg_loss * 10)
+            loss = mse_loss + (vgg_loss * 10)
             epoch_loss += loss.item()
 
             # output is the final reconstructed image i.e. last in the array of outputs of n iterations

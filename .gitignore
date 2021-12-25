@@ -5,3 +5,4 @@ src/itmo/test_results
 /datasets/**
 /datasets.zip
 /src/virtualcamera/virtualcamera
+src/itmo/fhdr/checkpoints/
