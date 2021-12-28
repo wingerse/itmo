@@ -1,3 +1,4 @@
+import math
 from math import log10, sqrt
 import imageio
 import os
@@ -25,7 +26,7 @@ def logPSNR(testImageHdrLuminance, referenceImageHdrLuminance):
     if (mse == 0):  # means that no noise present, logPSNR serves no importance here
         return 100
     Lmax = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
-    logPsnr = 10 * log10(log10(Lmax)/mse)
+    logPsnr = 10 * log10(log10(Lmax)/math.sqrt(mse))
     return logPsnr
 
 
