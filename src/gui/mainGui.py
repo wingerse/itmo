@@ -2,7 +2,7 @@ import sys
 sys.path.append('../')
 
 import dearpygui.dearpygui as dpg
-from theme import global_theme, default_font, title_font, h1, normal_text
+from theme import *
 from util import load_ldr_image, load_hdr_image, save_ldr_image, save_hdr_image
 from tmo import reinhard
 from itmo import fhdr
@@ -197,13 +197,20 @@ if __name__ == '__main__':
 
     with dpg.window(label="LDR to HDR Converter", tag="main") as main_window:
         
-        title = dpg.add_text("LDR to HDR Converter")
+        with dpg.group(horizontal=True):
+            title_text = dpg.add_text("LDR to HDR Converter")
+            dpg.add_spacer(width=50)
+            credit = dpg.add_text("By Ahmed Aiman, Ngu Bing Xian, Yaaseen Edoo & Vanessa Tan\n"
+                                  "Group FIT3161_MA_14\n"
+                                  "Monash University")
+            
         dpg.add_spacer(height=20)
         dpg.add_separator()
         dpg.add_spacer(height=10)
-        instructions = dpg.add_text(("Welcome to our LDR to HDR Image Converter!\n"
-                                     "Start by uploading an LDR image and a reference HDR image. But do make sure\n" 
-                                     "that they are of the same scene. Then simply click the 'Generate' button."))
+        instructions = dpg.add_text("Welcome to our LDR to HDR Image Converter!\n"
+                                    "Start by uploading an LDR image and a reference HDR image. But do make sure that they are of the same scene!\n" 
+                                    "Once you are ready, simply click the 'Generate' button to start the conversion.\n"
+                                    "You can then save the generated image by clicking the 'Save Image' button and the image will be saved in both .hdr and .png formats.")
         dpg.add_spacer(height=10)
         dpg.add_separator()
         dpg.add_spacer(height=10)
@@ -252,7 +259,8 @@ if __name__ == '__main__':
 
     # set fonts
     dpg.bind_font(default_font)
-    dpg.bind_item_font(title, title_font)
+    dpg.bind_item_font(title_text, title)
+    dpg.bind_item_font(credit, subtitle)
     dpg.bind_item_font(instructions, normal_text)
     dpg.bind_item_font(ldr_title, h1)
     dpg.bind_item_font(hdr_title, h1)
