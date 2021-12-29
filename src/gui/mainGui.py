@@ -19,6 +19,9 @@ GENERATED_ALIAS = "generated"
 LDR_REGISTRY = "ldr_registry"
 HDR_REGISTRY = "hdr_registry"
 GENERATED_REGISTRY = "generated_registry"
+PROGRESS_GROUP = "progress_group"
+PROGRESS_BAR = "progress_bar"
+
 
 class Images:
     def __init__(self):
@@ -55,6 +58,7 @@ def save_image(sender, app_data, user_data):
     hdr_name = file_path_name + ".hdr"
     ldr_name = file_path_name + ".png"
     
+    # save both hdr and ldr images
     save_hdr_image(generated_hdr, hdr_name)
     save_ldr_image(generated_ldr, ldr_name)
     
@@ -65,29 +69,52 @@ def convert_image(sender, app_data, user_data):
     # print("app_data: ", app_data)
     # print("user_data: ", user_data)
     
-    window = user_data[0]
-    images = user_data[1]
-    
-    generated, psnr, ssim = fhdr(
-    images.ldr, 
-    images.hdr,
-    ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
-
-    # print(generated.min(), generated.max())
-    # print(f"PSNR={psnr}, SSIM={ssim}")
-    generated_ldr = reinhard(generated)
-    
-    # height, width, number of channels in generated hdr image
-    height = generated_ldr.shape[0]
-    width = generated_ldr.shape[1]
-    
+    # delete texture registry and image if currently exists (to be replaced with new ones)
     if dpg.does_alias_exist(GENERATED_ALIAS):
         dpg.delete_item(GENERATED_ALIAS)
         dpg.delete_item(GENERATED_REGISTRY)
     
+    # show progress bar to generate image
+    dpg.configure_item(PROGRESS_GROUP, show=True)
+    dpg.set_value(PROGRESS_BAR, 0.0)
+    
+    # get container and uploaded images from user data
+    window = user_data[0]
+    images = user_data[1]
+    
+    # update progress bar
+    dpg.set_value(PROGRESS_BAR, 0.25)
+    
+    # inverse tone mapping to convert the LDR image to HDR
+    generated, psnr, ssim = fhdr(
+    images.ldr, 
+    images.hdr,
+    ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
+    
+    # update progress bar
+    dpg.set_value(PROGRESS_BAR, 0.5)
+    
+    # tone map the generated hdr image back to ldr for display
+    generated_ldr = reinhard(generated)
+    
+    # update progress bar
+    dpg.set_value(PROGRESS_BAR, 0.75)
+    
+    # get height and width of generated hdr image
+    height = generated_ldr.shape[0]
+    width = generated_ldr.shape[1]
+    
+    # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=GENERATED_REGISTRY):
         texture_id = dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgb)
         
+    # TODO: try adding to same registry without deleting, maybe use tag.#################################################################
+        
+    # update progress bar and hide it
+    dpg.set_value(PROGRESS_BAR, 1.0)
+    dpg.configure_item(PROGRESS_GROUP, show=False)
+    
+    # add image, and enable save button
     dpg.add_image(texture_id, parent=window, tag=GENERATED_ALIAS)
     dpg.configure_item(SAVE_FILE_DIALOG, user_data=(generated, generated_ldr))
     dpg.configure_item(SAVE_BUTTON, enabled=True)
@@ -99,24 +126,29 @@ def upload_ldr(sender, app_data, user_data):
     # print("app_data: ", app_data)
     # print("user_data: ", user_data)
     
+    # get information needed from app_data and user_data
     image_path = app_data['file_path_name']
     images = user_data[1]
+    window = user_data[0]
+    
+    # store uploaded ldr image
     images.ldr = load_ldr_image(image_path)
     images.ldr_flag = True
-    window = user_data[0]
     
     # add_and_load_image(image_path, parent=window)
     
     width, height, channels, data = dpg.load_image(image_path)
     
+    # delete texture registry and image if currently exists (to be replaced with new ones)    
     if dpg.does_alias_exist(ORIGINAL_LDR_ALIAS):
         dpg.delete_item(ORIGINAL_LDR_ALIAS)
         dpg.delete_item(LDR_REGISTRY)
-        # dpg.remove_alias(ORIGINAL_LDR_ALIAS)
 
+    # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=LDR_REGISTRY):
         texture_id = dpg.add_static_texture(width, height, data)
 
+    # display image
     dpg.add_image(texture_id, parent=window, tag=ORIGINAL_LDR_ALIAS)
     
    
@@ -127,27 +159,32 @@ def upload_hdr(sender, app_data, user_data):
     # print("app_data: ", app_data)
     # print("user_data: ", user_data)
     
+    # get information needed from app_data and user_data
     image_path = app_data['file_path_name']
     images = user_data[1]
-    images.hdr = load_hdr_image(image_path)
-    images.hdr_flag = True
     window = user_data[0]
     
-    # convert hdr to ldr for better display
+    # store uploaded reference hdr image
+    images.hdr = load_hdr_image(image_path)
+    images.hdr_flag = True
+    
+    # convert hdr to ldr for display
     reference_hdr = reinhard(images.hdr)
     
     # get height and width of reference hdr image
     height = reference_hdr.shape[0]
     width = reference_hdr.shape[1]
     
+    # delete texture registry and image if currently exists (to be replaced with new ones)  
     if dpg.does_alias_exist(REFERENCE_HDR_ALIAS):
         dpg.delete_item(REFERENCE_HDR_ALIAS)
         dpg.delete_item(HDR_REGISTRY)
-        # dpg.remove_alias(REFERENCE_HDR_ALIAS)
     
+    # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=HDR_REGISTRY):
         texture_id = dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgb)
        
+    # display image
     dpg.add_image(texture_id, parent=window, tag=REFERENCE_HDR_ALIAS)    
 
 if __name__ == '__main__':
@@ -165,8 +202,8 @@ if __name__ == '__main__':
         dpg.add_separator()
         dpg.add_spacer(height=10)
         instructions = dpg.add_text(("Welcome to our LDR to HDR Image Converter!\n"
-                                    "Start by uploading an LDR image and a reference HDR image. But do make sure\n" 
-                                    "that they are of the same scene. Then simply click the 'Generate' button."))
+                                     "Start by uploading an LDR image and a reference HDR image. But do make sure\n" 
+                                     "that they are of the same scene. Then simply click the 'Generate' button."))
         dpg.add_spacer(height=10)
         dpg.add_separator()
         dpg.add_spacer(height=10)
@@ -193,7 +230,14 @@ if __name__ == '__main__':
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=convert_image, user_data=(generated_container, images))   
                     dpg.add_button(label="Save Image", tag=SAVE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=lambda: dpg.show_item("save_file_dialog"))
-            
+
+                with dpg.group(show=False, tag=PROGRESS_GROUP):
+                    dpg.add_spacer(height=10)
+                    loading = dpg.add_text("Loading...")
+                    dpg.add_spacer(height=5)
+                    dpg.add_progress_bar(tag=PROGRESS_BAR)
+                
+                
     # file dialog for uploading LDR image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):
         dpg.add_file_extension("{.png,.jpg}")
@@ -213,12 +257,14 @@ if __name__ == '__main__':
     dpg.bind_item_font(ldr_title, h1)
     dpg.bind_item_font(hdr_title, h1)
     dpg.bind_item_font(generated_title, h1)
+    dpg.bind_item_font(loading, normal_text)
     
     # set the theme
     dpg.bind_theme(global_theme)
     
     # dpg.show_style_editor()
 
+    # start display
     dpg.show_viewport()
     dpg.set_primary_window("main", True)
     # dpg.start_dearpygui()
