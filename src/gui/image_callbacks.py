@@ -45,16 +45,22 @@ def convert_image(sender, app_data, user_data):
     dpg.set_value(PROGRESS_BAR, 0.25)
     
     # inverse tone mapping to convert the LDR image to HDR
-    generated, psnr, ssim = fhdr(
-    images.ldr, 
-    images.hdr,
-    ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
+    try:
+        generated, psnr, ssim = fhdr(
+        images.ldr, 
+        images.hdr,
+        ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
+    except:
+        dpg.configure_item(ERROR_MODAL, show=True)
     
     # update progress bar
     dpg.set_value(PROGRESS_BAR, 0.5)
     
     # tone map the generated hdr image back to ldr for display
-    generated_ldr = reinhard(generated)
+    try:
+        generated_ldr = reinhard(generated)
+    except:
+        dpg.configure_item(ERROR_MODAL, show=True)
     
     # update progress bar
     dpg.set_value(PROGRESS_BAR, 0.75)

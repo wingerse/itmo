@@ -1,6 +1,6 @@
 import dearpygui.dearpygui as dpg
 from constants import *
-from callbacks import *
+from image_callbacks import *
 from theme import *
 
 class Images:
@@ -79,6 +79,10 @@ if __name__ == '__main__':
     # file dialog for saving generated images in both ldr and hdr formats
     with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG):
         dpg.add_file_extension("{.png,.jpg,.hdr}")
+        
+    # error modal
+    with dpg.window(label="Error", modal=True, show=False, id=ERROR_MODAL, pos=(600, 300)) as error_display:
+        dpg.add_text("There was a problem generating the image :(")
 
     # set fonts
     dpg.bind_font(default_font)
@@ -92,6 +96,7 @@ if __name__ == '__main__':
     
     # set the theme
     dpg.bind_theme(global_theme)
+    dpg.bind_item_theme(error_display, error_theme)
     
     # dpg.show_style_editor()
 
