@@ -10,10 +10,6 @@ from .model import FHDR
 from .util import mu_tonemap, update_lr
 from .vgg import VGGLoss
 
-def weights_init(m):
-    if isinstance(m, torch.nn.Conv2d):
-        m.weight.data.normal_(0.0, 0.0)
-
 def train(
     checkpoint_path, dataset_path, batch_size=1, iteration_count=1, lr=0.0002, epochs=200, lr_decay_after=100,
     resume_epoch=1,
@@ -31,7 +27,7 @@ def train(
 
     model.cuda()
 
-    mse = torch.nn.MSELoss()
+    l1 = torch.nn.L1Loss()
     perceptual_loss = VGGLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
 
@@ -39,7 +35,6 @@ def train(
         model.load_state_dict(torch.load(os.path.join(checkpoint_path, f"epoch_{resume_epoch-1}.ckpt")))
         start_epoch = resume_epoch
     else:
-        model.apply(weights_init)
         start_epoch = 1
 
     start = time.time()
@@ -63,25 +58,25 @@ def train(
             # forward pass ->
             output = model(input)
 
-            mse_loss = 0
+            l1_loss = 0
             vgg_loss = 0
 
             # computing loss for n generated outputs (from n-iterations) ->
             for image in output:
                 image_t = mu_tonemap(image)
-                mse_loss += mse(image_t, gt_t)
+                l1_loss += l1(image_t, gt_t)
                 vgg_loss += perceptual_loss(image_t, gt_t)
 
             # averaged over n iterations
-            mse_loss /= len(output)
+            l1_loss /= len(output)
             vgg_loss /= len(output)
 
             # averaged over batches
-            mse_loss = torch.mean(mse_loss)
+            l1_loss = torch.mean(l1_loss)
             vgg_loss = torch.mean(vgg_loss)
 
             # FHDR loss function
-            loss = mse_loss + (vgg_loss * 10)
+            loss = l1_loss + (vgg_loss * 10)
             epoch_loss += loss.item()
 
             # output is the final reconstructed image i.e. last in the array of outputs of n iterations
@@ -95,9 +90,9 @@ def train(
         epoch_finish = time.time()
         time_taken = (epoch_finish - epoch_start) / 60
 
-        print(f"End of epoch {epoch}. Time taken: {time_taken:.2} minutes. Loss: {epoch_loss}")
+        print(f"End of epoch {epoch}. Time taken: {time_taken:.2f} minutes. Loss: {epoch_loss}")
 
         torch.save(model.state_dict(), os.path.join(checkpoint_path, f"epoch_{epoch}.ckpt"))
     
     time_taken = (time.time() - start) / 60
-    print(f"Done. Time taken: {time_taken:.2} minutes")
+    print(f"Done. Time taken: {time_taken:.2f} minutes")
