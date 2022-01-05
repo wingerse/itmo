@@ -3,9 +3,12 @@ sys.path.append('../')
 
 import dearpygui.dearpygui as dpg
 from constants import *
-from util import load_ldr_image, load_hdr_image, save_ldr_image, save_hdr_image
+from util import *
 from tmo import reinhard
 from itmo import fhdr
+
+import cv2
+import numpy as np
 
 def save_image(sender, app_data, user_data):
     """Callback for saving image"""
@@ -50,17 +53,19 @@ def convert_image(sender, app_data, user_data):
         images.ldr, 
         images.hdr,
         ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
-    except:
+    except Exception as e:
         dpg.configure_item(ERROR_MODAL, show=True)
+        print(e)
     
     # update progress bar
     dpg.set_value(PROGRESS_BAR, 0.5)
     
     # tone map the generated hdr image back to ldr for display
     try:
-        generated_ldr = reinhard(generated)
-    except:
+        generated_ldr = cv2.cvtColor(reinhard(generated), cv2.COLOR_RGB2RGBA)
+    except Exception as e:
         dpg.configure_item(ERROR_MODAL, show=True)
+        print(e)
     
     # update progress bar
     dpg.set_value(PROGRESS_BAR, 0.75)
@@ -71,7 +76,7 @@ def convert_image(sender, app_data, user_data):
     
     # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=GENERATED_REGISTRY):
-        texture_id = dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgb)
+        texture_id = dpg.add_raw_texture(width, height, generated_ldr, format=dpg.mvFormat_Float_rgba)
         
     # TODO: try adding to same registry without deleting, maybe use tag.#################################################################
         
@@ -96,8 +101,16 @@ def upload_ldr(sender, app_data, user_data):
     images.ldr = load_ldr_image(image_path)
     images.ldr_flag = True
     
-    # get width, height and data of loaded image    
-    width, height, channels, data = dpg.load_image(image_path)
+    # ldr_image = images.ldr.astype(np.float32)
+    ldr_image = cv2.cvtColor(images.ldr.astype(np.float32), cv2.COLOR_RGB2RGBA)
+    
+    # get height and width of ldr image
+    height = ldr_image.shape[0]
+    width = ldr_image.shape[1]
+    
+    # resize image if it is too big
+    if height > MAX_IMAGE_HEIGHT or width > MAX_IMAGE_WIDTH:
+        ldr_image, height, width = downsize_image(ldr_image, height, width)
     
     # delete texture registry and image if currently exists (to be replaced with new ones)    
     if dpg.does_alias_exist(ORIGINAL_LDR_ALIAS):
@@ -106,7 +119,8 @@ def upload_ldr(sender, app_data, user_data):
 
     # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=LDR_REGISTRY):
-        texture_id = dpg.add_static_texture(width, height, data)
+        # texture_id = dpg.add_static_texture(width, height, ldr_image)
+        texture_id = dpg.add_raw_texture(width, height, ldr_image, format=dpg.mvFormat_Float_rgba)
 
     # display image
     dpg.add_image(texture_id, parent=window, tag=ORIGINAL_LDR_ALIAS)
@@ -125,11 +139,16 @@ def upload_hdr(sender, app_data, user_data):
     images.hdr_flag = True
     
     # convert hdr to ldr for display
-    reference_hdr = reinhard(images.hdr)
+    reference_hdr = cv2.cvtColor(reinhard(images.hdr), cv2.COLOR_RGB2RGBA)
     
     # get height and width of reference hdr image
     height = reference_hdr.shape[0]
     width = reference_hdr.shape[1]
+    print("original (height, width): ", height, width)
+    
+    # resize image if it is too big
+    if height > MAX_IMAGE_HEIGHT or width > MAX_IMAGE_WIDTH:
+        reference_hdr, height, width = downsize_image(reference_hdr, height, width)
     
     # delete texture registry and image if currently exists (to be replaced with new ones)  
     if dpg.does_alias_exist(REFERENCE_HDR_ALIAS):
@@ -138,7 +157,7 @@ def upload_hdr(sender, app_data, user_data):
     
     # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=HDR_REGISTRY):
-        texture_id = dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgb)
+        texture_id = dpg.add_raw_texture(width, height, reference_hdr, format=dpg.mvFormat_Float_rgba)
        
     # display image
     dpg.add_image(texture_id, parent=window, tag=REFERENCE_HDR_ALIAS)

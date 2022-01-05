@@ -54,7 +54,7 @@ if __name__ == '__main__':
                                 
             dpg.add_spacer(width=50)
             
-            with dpg.group(indent=600) as generated_container:
+            with dpg.group(indent=700) as generated_container:
                 generated_title = dpg.add_text("Generated Image")
                 
                 with dpg.group(horizontal=True):
@@ -70,7 +70,7 @@ if __name__ == '__main__':
                 
     # file dialog for uploading LDR image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):
-        dpg.add_file_extension("{.png,.jpg}")
+        dpg.add_file_extension("{.png,.jpg,.jpeg}")
         
     # file dialog for uploading HDR reference image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_hdr, id=UPLOAD_HDR_DIALOG, user_data=(hdr_container, images)):
@@ -78,10 +78,10 @@ if __name__ == '__main__':
         
     # file dialog for saving generated images in both ldr and hdr formats
     with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG):
-        dpg.add_file_extension("{.png,.jpg,.hdr}")
+        dpg.add_file_extension("{.png,.hdr}")
         
     # error modal
-    with dpg.window(label="Error", modal=True, show=False, id=ERROR_MODAL, pos=(600, 300)) as error_display:
+    with dpg.window(label="Error", modal=True, show=False, id=ERROR_MODAL, pos=(600, 300), on_close=lambda: dpg.configure_item(PROGRESS_GROUP, show=False)) as error_display:
         dpg.add_text("There was a problem generating the image :(")
 
     # set fonts
