@@ -1,124 +1,64 @@
-
+import os
+from os import path
 import numpy as np
 import torch
 import torch.nn as nn
 from skimage.metrics import structural_similarity
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .data_loader import HDRDataset
+from .dataset import HDRDataset
 from .model import FHDR
-from .options import Options
-from .util import make_required_directories, mu_tonemap, save_ldr_image, save_hdr_image
-import cv2
-from torchvision import transforms
+from .util import mu_tonemap, unpreprocess_hdr, unpreprocess_ldr
+from util import save_ldr_image, save_hdr_image
 
-# initialise options
-opt = Options().parse()
+def test(checkpoint_path, dataset_path, output_path, batch_size=1, iteration_count=1):
+    dataset = HDRDataset(dataset_path, batch_size)
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-# ======================================
-# loading data
-# ======================================
+    model = FHDR(iteration_count)
 
-dataset = HDRDataset(mode="test", opt=opt)
-data_loader = DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
-
-print("Testing samples: ", len(dataset))
-
-# ========================================
-# model initialising, loading & gpu configuration
-# ========================================
-
-model = FHDR(iteration_count=opt.iter)
-
-str_ids = opt.gpu_ids.split(",")
-opt.gpu_ids = []
-for str_id in str_ids:
-    id = int(str_id)
-    if id >= 0:
-        opt.gpu_ids.append(id)
-
-# set gpu device
-if len(opt.gpu_ids) > 0:
     assert torch.cuda.is_available()
-    assert torch.cuda.device_count() >= len(opt.gpu_ids)
-
-    torch.cuda.set_device(opt.gpu_ids[0])
-
-    if len(opt.gpu_ids) > 1:
-        model = torch.nn.DataParallel(model, device_ids=opt.gpu_ids)
+    torch.cuda.set_device(0)
 
     model.cuda()
+    model.load_state_dict(torch.load(checkpoint_path))
 
-mse_loss = nn.MSELoss()
+    os.makedirs(path.join(output_path, "ldr"), exist_ok=True)
+    os.makedirs(path.join(output_path, "hdr"), exist_ok=True)
+    os.makedirs(path.join(output_path, "gt_hdr"), exist_ok=True)
 
-# loading checkpoint for evaluation
-model.load_state_dict(torch.load(opt.ckpt_path))
+    mse_loss = nn.MSELoss()
+    psnr = 0
+    ssim = 0
 
-make_required_directories(mode="test")
+    with torch.no_grad():
+        for batch, data in enumerate(tqdm(data_loader, desc="Testing %")):
+            input = data[0].cuda()
+            gt_hdr = data[1].cuda()
+            gt_t = mu_tonemap(gt_hdr)
 
-avg_psnr = 0
-avg_ssim = 0
+            output = model(input)[-1]
 
-print("Starting evaluation. Results will be saved in '/test_results' directory")
+            for batch_i in range(len(output)):
+                i = batch * batch_size + batch_i
 
-with torch.no_grad():
+                input_u = unpreprocess_ldr(input[batch_i])
+                output_u = unpreprocess_hdr(output[batch_i])
+                gt_hdr_u = unpreprocess_hdr(gt_hdr[batch_i])
 
-    for batch, data in enumerate(tqdm(data_loader, desc="Testing %")):
-        input = data["ldr_image"].data.cuda()
-        ground_truth = data["hdr_image"].data.cuda()
+                save_ldr_image(input_u, path.join(output_path, "ldr", f"{i}.png"))
+                save_hdr_image(output_u, path.join(output_path, "hdr", f"{i}.hdr"))
+                save_hdr_image(gt_hdr_u, path.join(output_path, "gt_hdr", f"{i}.hdr"))
 
-        output = model(input)
-
-        # tonemapping ground truth image for PSNR-μ calculation
-        mu_tonemap_gt = mu_tonemap(ground_truth)
-
-        output = output[-1]
-
-        for batch_ind in range(len(output.data)):
-
-            # saving results
-            save_ldr_image(
-                img_tensor=input,
-                batch=batch_ind,
-                path="./test_results/ldr_b_{}_{}.png".format(batch, batch_ind),
-            )
-            save_hdr_image(
-                img_tensor=output,
-                batch=batch_ind,
-                path="./test_results/generated_hdr_b_{}_{}.hdr".format(
-                    batch, batch_ind
-                ),
-            )
-            save_hdr_image(
-                img_tensor=ground_truth,
-                batch=batch_ind,
-                path="./test_results/gt_hdr_b_{}_{}.hdr".format(batch, batch_ind),
-            )
-
-            if opt.log_scores:
                 # calculating PSNR score
-                mse = mse_loss(
-                    mu_tonemap(output.data[batch_ind]), mu_tonemap_gt.data[batch_ind]
-                )
-                psnr = 10 * np.log10(1 / mse.item())
-
-                avg_psnr += psnr
-
-                generated = (
-                    np.transpose(output.data[batch_ind].cpu().numpy(), (1, 2, 0)) + 1
-                ) / 2.0
-                real = (
-                    np.transpose(ground_truth.data[batch_ind].cpu().numpy(), (1, 2, 0))
-                    + 1
-                ) / 2.0
+                mse = mse_loss(mu_tonemap(output[batch_i]), gt_t[batch_i])
+                psnr += 10 * np.log10(1 / mse.item())
 
                 # calculating SSIM score
-                ssim = structural_similarity(generated, real, multichannel=True)
-                avg_ssim += ssim
+                ssim += structural_similarity(output_u, gt_hdr_u, channel_axis=2)
+    
+    psnr /= len(dataset)
+    ssim /= len(dataset)
 
-if opt.log_scores:
-    print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr / len(dataset)))
-    print("Avg SSIM -> " + str(avg_ssim / len(dataset)))
-
-print("Evaluation completed.")
+    return (psnr, ssim)

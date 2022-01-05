@@ -1,6 +1,8 @@
 .venv
 __pycache__
 src/itmo/test_results
-test_output/**
+/src/test_output/**
 /datasets/**
 /datasets.zip
+/src/virtualcamera/virtualcamera
+src/itmo/fhdr/checkpoints/

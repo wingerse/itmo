@@ -4,23 +4,23 @@ import numpy as np
 def _load_image(path):
     i = cv2.imread(path, cv2.IMREAD_UNCHANGED)
     if i is None:
-        raise Exception("invalid path")
+        raise Exception(f"invalid path: {path}")
     i = cv2.cvtColor(i, cv2.COLOR_BGR2RGB)
-    return i
+    return i.astype(np.float32)
 
 def load_ldr_image(path):
     i = _load_image(path)
     return i / 255
 
 def load_hdr_image(path):
-    return _load_image(path)
+    return _load_image(path).clip(0, None)
 
 def _save_image(img, path):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     cv2.imwrite(path, img)
 
 def save_hdr_image(img, path):
-    _save_image(img.astype(np.float32), path)
+    _save_image(img, path)
 
 def save_ldr_image(img, path):
     _save_image((img * 255).astype(np.uint8), path)
