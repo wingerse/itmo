@@ -21,6 +21,7 @@ def unpreprocess_ldr(ldr):
     ldr = (ldr + 1) / 2
     ldr =  (ldr.permute(1, 2, 0)).cpu().numpy() 
     ldr = apply_gamma(ldr)
+    return ldr
 
 def preprocess_hdr(hdr):
     hdr = torch.from_numpy(hdr).permute(2, 0, 1)
