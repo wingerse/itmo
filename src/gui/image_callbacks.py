@@ -55,17 +55,19 @@ def convert_image(sender, app_data, user_data):
         ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
     except Exception as e:
         dpg.configure_item(ERROR_MODAL, show=True)
-        print(e)
+        print("Error:", e)
+        return
     
     # update progress bar
     dpg.set_value(PROGRESS_BAR, 0.5)
     
-    # tone map the generated hdr image back to ldr for display
+    # tone map the generated hdr image to ldr for display and convert colour to rgba
     try:
         generated_ldr = cv2.cvtColor(reinhard(generated), cv2.COLOR_RGB2RGBA)
     except Exception as e:
         dpg.configure_item(ERROR_MODAL, show=True)
-        print(e)
+        print("Error:", e)
+        return
     
     # update progress bar
     dpg.set_value(PROGRESS_BAR, 0.75)
@@ -73,6 +75,10 @@ def convert_image(sender, app_data, user_data):
     # get height and width of generated hdr image
     height = generated_ldr.shape[0]
     width = generated_ldr.shape[1]
+    
+    # resize image if it is too big
+    if height > MAX_IMAGE_HEIGHT or width > MAX_IMAGE_WIDTH:
+        generated_ldr, height, width = downsize_image(generated_ldr, height, width)
     
     # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=GENERATED_REGISTRY):
@@ -93,15 +99,22 @@ def upload_ldr(sender, app_data, user_data):
     """Callback for uploading image"""
     
     # get information needed from app_data and user_data
+    file_name = app_data['file_name']
     image_path = app_data['file_path_name']
     images = user_data[1]
     window = user_data[0]
     
     # store uploaded ldr image
-    images.ldr = load_ldr_image(image_path)
+    try:
+        images.ldr = load_ldr_image(image_path)
+    except Exception as e:
+        dpg.configure_item(ERROR_MODAL, show=True)
+        dpg.configure_item(ERROR_MESSAGE, default_value="Image with file name '{}' could not be found.\nRemember to include file extensions!".format(file_name))
+        print("Error:", e)
+        return
     images.ldr_flag = True
     
-    # ldr_image = images.ldr.astype(np.float32)
+    # convert colour to rgba
     ldr_image = cv2.cvtColor(images.ldr.astype(np.float32), cv2.COLOR_RGB2RGBA)
     
     # get height and width of ldr image
@@ -130,21 +143,27 @@ def upload_hdr(sender, app_data, user_data):
     """Callback for uploading hdr reference image"""
     
     # get information needed from app_data and user_data
+    file_name = app_data['file_name']
     image_path = app_data['file_path_name']
     images = user_data[1]
     window = user_data[0]
     
     # store uploaded reference hdr image
-    images.hdr = load_hdr_image(image_path)
+    try:
+        images.hdr = load_hdr_image(image_path)
+    except Exception as e:
+        dpg.configure_item(ERROR_MODAL, show=True)
+        dpg.configure_item(ERROR_MESSAGE, default_value="Image with file name '{}' could not be found. \nRemember to include file extensions!".format(file_name))
+        print("Error:", e)
+        return
     images.hdr_flag = True
     
-    # convert hdr to ldr for display
+    # tonemap hdr to ldr for display and convert colour to rgba
     reference_hdr = cv2.cvtColor(reinhard(images.hdr), cv2.COLOR_RGB2RGBA)
     
     # get height and width of reference hdr image
     height = reference_hdr.shape[0]
     width = reference_hdr.shape[1]
-    print("original (height, width): ", height, width)
     
     # resize image if it is too big
     if height > MAX_IMAGE_HEIGHT or width > MAX_IMAGE_WIDTH:

@@ -81,8 +81,10 @@ if __name__ == '__main__':
         dpg.add_file_extension("{.png,.hdr}")
         
     # error modal
-    with dpg.window(label="Error", modal=True, show=False, id=ERROR_MODAL, pos=(600, 300), on_close=lambda: dpg.configure_item(PROGRESS_GROUP, show=False)) as error_display:
-        dpg.add_text("There was a problem generating the image :(")
+    with dpg.window(modal=True, show=False, id=ERROR_MODAL, pos=(550, 250), on_close=lambda: dpg.configure_item(PROGRESS_GROUP, show=False), no_resize=True) as error_display:
+        error_title = dpg.add_text("An error occured :(")
+        dpg.add_spacer(height=10)
+        dpg.add_text("There was a problem generating the image", tag=ERROR_MESSAGE)
 
     # set fonts
     dpg.bind_font(default_font)
@@ -93,6 +95,7 @@ if __name__ == '__main__':
     dpg.bind_item_font(hdr_title, h1)
     dpg.bind_item_font(generated_title, h1)
     dpg.bind_item_font(loading, normal_text)
+    dpg.bind_item_font(error_title, h1)
     
     # set the theme
     dpg.bind_theme(global_theme)
