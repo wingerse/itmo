@@ -67,6 +67,12 @@ if __name__ == '__main__':
                     dpg.add_spacer(height=5)
                     dpg.add_progress_bar(tag=PROGRESS_BAR)
                 
+                # dpg.add_spacer(width=10)
+                    
+                # with dpg.group(show=False, tag=EVALUATION):
+                #     dpg.add_text("Test Evaluation Metric")
+                #     dpg.add_text("", tag=EVALUATION_RESULTS)
+                
                 
     # file dialog for uploading LDR image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):

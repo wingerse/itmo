@@ -34,6 +34,9 @@ def convert_image(sender, app_data, user_data):
     if dpg.does_alias_exist(GENERATED_ALIAS):
         dpg.delete_item(GENERATED_ALIAS)
         dpg.delete_item(GENERATED_REGISTRY)
+        dpg.delete_item(EVALUATION)
+        dpg.delete_item(PSNR_RESULTS)
+        dpg.delete_item(SSIM_RESULTS)
         dpg.configure_item(SAVE_BUTTON, enabled=False)
     
     # show progress bar to generate image
@@ -92,6 +95,9 @@ def convert_image(sender, app_data, user_data):
     
     # add image, and enable save button
     dpg.add_image(texture_id, parent=window, tag=GENERATED_ALIAS)
+    dpg.add_text("Test Evaluation Metric", parent=window, tag=EVALUATION)
+    dpg.add_text("PSNR = {}".format(psnr), parent=window, tag=PSNR_RESULTS)
+    dpg.add_text("SSIM = {}".format(ssim), parent=window, tag=SSIM_RESULTS)
     dpg.configure_item(SAVE_FILE_DIALOG, user_data=(generated, generated_ldr))
     dpg.configure_item(SAVE_BUTTON, enabled=True)
 
@@ -132,7 +138,6 @@ def upload_ldr(sender, app_data, user_data):
 
     # create new texture registry and add texture of tone mapped image
     with dpg.texture_registry(tag=LDR_REGISTRY):
-        # texture_id = dpg.add_static_texture(width, height, ldr_image)
         texture_id = dpg.add_raw_texture(width, height, ldr_image, format=dpg.mvFormat_Float_rgba)
 
     # display image
