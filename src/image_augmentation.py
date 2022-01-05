@@ -3,23 +3,6 @@ from random import random, uniform, randrange
 import numpy as np
 from util import apply_gamma, luminance
 
-def log_tonemap(l):
-    """
-    Tonemap luminance map using log tonemapping
-    """
-
-    return np.log(l + 1) / np.log(l.max() + 1)
-
-def inverse_log_tonemap(l, max):
-    """
-    Inverse tone map luminance map using log tonemapping.
-    :param l: Luminance map.
-    :param max: Maximum of luminance map before tonemapping.  
-    :return: Inverse tonemaped luminance map.  
-    """
-
-    return np.exp((l * np.log(max + 1))) - 1
-
 MIN_FRAC = 0.2 # minimum fraction of the image to crop
 MAX_FRAC = 0.6 # maximum fraction of the image to crop
 MIN_LOSS = 0.05 # minimum fraction of the image to lose information
@@ -33,12 +16,8 @@ def change_exposure(img, bright):
     :return: The resulting image.  
     """
     
-    l = luminance(img)
-    max_ = l.max()
-
-    l_d = log_tonemap(l)
-    # calculate histogram of the tonemapped luminance map. 
-    hist, edges = np.histogram(l_d, bins=img.size)
+    # calculate histogram of the image
+    hist, edges = np.histogram(img, bins=img.size)
 
     # find a random fraction to lose information
     loss = uniform(MIN_LOSS, MAX_LOSS)
@@ -47,16 +26,13 @@ def change_exposure(img, bright):
     edge = None
     # if oversaturation, start from the end of histogram, else start from the beginning
     rng = range(len(hist)-1, -1, -1) if bright else range(0, len(hist))
-    # find the first luminance value (edge) such that the fraction of pixels which have 
-    # luminances >= to this value is >= loss. 
+    # find the first pixel value (edge) such that the fraction of pixels which have 
+    # values >= to this value is >= loss. 
     for i in rng:
         edge = edges[i] if bright else edges[i+1]
         pixel_count += hist[i]
-        if pixel_count/l_d.size >= loss:
+        if pixel_count/img.size >= loss:
             break
-
-    # remove the tonamepping
-    edge = inverse_log_tonemap(edge, max_)
 
     if bright:
         # if oversaturating, scale up the image such that the edge becomes 1

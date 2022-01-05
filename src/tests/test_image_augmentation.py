@@ -1,13 +1,17 @@
 import include_parent_path
-from image_augmentation import change_exposure, crf
+from image_augmentation import change_exposure, crf, MIN_LOSS, MAX_LOSS
 from tmo import drago
-from util import apply_gamma, load_hdr_image, save_ldr_image
+from util import apply_gamma, load_hdr_image, luminance, save_ldr_image
 import numpy as np
 
-def test_image_augmentation():
+def test_change_exposure():
     hdr = load_hdr_image("test_images/Apartment_float_o15C.hdr")
     save_ldr_image(drago(hdr), "test_outputs/aug_reference.jpg")
     ldr = change_exposure(hdr, True)
+    loss_frac = np.count_nonzero(ldr >= 1)/ldr.size
+    # check if oversaturated image loses the required fraction of image (within +- 1%)
+    assert (MIN_LOSS-0.01) <= loss_frac <= (MAX_LOSS+0.01)
+
     ldr = crf(ldr)
     ldr = apply_gamma(ldr)
     save_ldr_image(ldr, "test_outputs/aug_oversaturated.jpg")
@@ -17,6 +21,10 @@ def test_image_augmentation():
     save_ldr_image(ldr_bright_mask, "test_outputs/aug_oversaturated_mask.jpg")
 
     ldr = change_exposure(hdr, False)
+    loss_frac = np.count_nonzero(ldr <= 0)/ldr.size
+    # check if undersaturated image loses the required fraction of image (within +- 1%)
+    assert (MIN_LOSS-0.01) <= loss_frac <= (MAX_LOSS+0.01)
+
     ldr = crf(ldr)
     ldr = apply_gamma(ldr)
     save_ldr_image(ldr, "test_outputs/aug_undersaturated.jpg")
