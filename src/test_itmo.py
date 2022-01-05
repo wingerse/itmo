@@ -1,13 +1,13 @@
 from itmo import linear, fhdr
 from tmo import drago
+from tmo.reinhard import reinhard
 from util import load_hdr_image, save_hdr_image, save_ldr_image, load_ldr_image
-from matplotlib import pyplot as plt
+import numpy as np
 
-ldr = load_ldr_image("../images/ldr_test.png")
-gt = load_hdr_image("../images/hdr_test.hdr")
+ldr = load_ldr_image("../datasets/testing_data_ours/ldr/126.jpg")
 
-hdr, psnr, ssim = fhdr(ldr, gt, f"itmo/fhdr/checkpoints/epoch_17.ckpt", iteration_count=1)
+hdr = fhdr(ldr, f"itmo/fhdr/checkpoints/ours_l1.ckpt")
+save_hdr_image(hdr, "test_output/fhdr.hdr")
 
-hdr_t = drago(hdr)
+hdr_t = reinhard(hdr)
 save_ldr_image(hdr_t, "test_output/fhdr.png")
-print(psnr, ssim)

@@ -6,12 +6,17 @@ from .util import preprocess_hdr, preprocess_ldr
 from util import load_hdr_image, load_ldr_image
 
 class HDRDataset(Dataset):
+    """
+    Custom dataset that loads and pre-processes the LDR and HDR images for the model
+    """
+
     def __init__(self, path, batch_size):
         self.batch_size = batch_size
 
         ldr_path = os.path.join(path, "ldr")
         hdr_path = os.path.join(path, "hdr")
 
+        # sort the paths so ldr-hdr pairs are matching
         self.ldr_paths = list(map(lambda p: os.path.join(ldr_path, p), sorted(os.listdir(ldr_path))))
         self.hdr_paths = list(map(lambda p: os.path.join(hdr_path, p), sorted(os.listdir(hdr_path))))
 
@@ -25,4 +30,5 @@ class HDRDataset(Dataset):
         return (ldr, hdr)
 
     def __len__(self):
+        # only multiples of batch sizes are returned, remainder is not processed
         return len(self.ldr_paths) // self.batch_size * self.batch_size

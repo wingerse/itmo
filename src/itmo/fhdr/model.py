@@ -2,9 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-import gc
 
 class FHDR(nn.Module):
+    """
+    The FHDR model as described in the paper. For more information, read the paper.
+    """
+
     def __init__(self, iteration_count):
         super().__init__()
 

@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torchvision import models
 
-
 class Vgg19(torch.nn.Module):
     def __init__(self, requires_grad=False):
         super(Vgg19, self).__init__()
@@ -37,6 +36,10 @@ class Vgg19(torch.nn.Module):
 
 
 class VGGLoss(nn.Module):
+    """
+    Perceptual loss used by the paper. For more information, read the paper. 
+    """
+
     def __init__(self):
         super(VGGLoss, self).__init__()
         self.vgg = Vgg19().cuda()
