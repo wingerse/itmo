@@ -5,3 +5,4 @@ test_outputs
 /datasets.zip
 /src/virtualcamera/virtualcamera
 src/itmo/fhdr/checkpoints/
+.pytest_cache

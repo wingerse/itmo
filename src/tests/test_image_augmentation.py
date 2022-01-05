@@ -1,5 +1,5 @@
 import include_parent_path
-from image_augmentation import change_exposure, crf, MIN_LOSS, MAX_LOSS
+from image_augmentation import augment, change_exposure, crf, MIN_LOSS, MAX_LOSS
 from tmo import drago
 from util import apply_gamma, load_hdr_image, luminance, save_ldr_image
 import numpy as np
@@ -32,3 +32,12 @@ def test_change_exposure():
     ldr_dark_mask = ldr.copy()
     ldr_dark_mask[np.all(ldr_dark_mask <= 0, axis=2)] = np.array([1, 0, 0]).astype(np.float32)
     save_ldr_image(ldr_dark_mask, "test_outputs/aug_undersaturated_mask.jpg")
+
+def test_augment():
+    hdr = load_hdr_image("test_images/Apartment_float_o15C.hdr")
+    ldr, hdr = augment(hdr, 256)
+    # correct size
+    assert ldr.shape[0] == 256 and ldr.shape[1] == 256 and \
+        hdr.shape[0] == 256 and hdr.shape[1] == 256
+    # is an ldr image
+    assert (0 <= ldr).all() and (ldr <= 1).all()
