@@ -107,4 +107,5 @@ def show_image_comparison(img, img_output):
     # cv.imshow("equalizeHist", np.hstack((img, img_output)))
     return
 
-histogram_equalization('../images/ldr_test3.jpg')
+if __name__ == "__main__":
+    histogram_equalization('test_images/ldr_test3.jpg')

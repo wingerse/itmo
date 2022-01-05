@@ -24,14 +24,13 @@ def test(checkpoint_path, dataset_path, output_path, batch_size=1, iteration_cou
     :return: Tuple of average (PSNR, SSIM).
     """
 
+    assert torch.cuda.is_available()
+    torch.cuda.set_device(0)
+
     dataset = HDRDataset(dataset_path, batch_size)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     model = FHDR(iteration_count)
-
-    assert torch.cuda.is_available()
-    torch.cuda.set_device(0)
-
     model.cuda()
     # load checkpoint
     model.load_state_dict(torch.load(checkpoint_path))

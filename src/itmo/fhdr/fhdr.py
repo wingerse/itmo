@@ -11,10 +11,10 @@ def fhdr(ldr, ckpt_path, iteration_count=1):
     :iteration_count: number of FHDR iterations to do, default is 1. 
     :return: generated hdr image as a numpy array
     """
-
-    model = FHDR(iteration_count)
     # use first gpu
     torch.cuda.set_device(0) 
+
+    model = FHDR(iteration_count)
     model.cuda()
 
     # load weights and biases from the checkpoint

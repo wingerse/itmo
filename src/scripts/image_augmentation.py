@@ -1,14 +1,14 @@
 """
 Script to generate augmented dataset from a high definition HDR dataset
 """
-
+import include_parent_path
 from image_augmentation import augment_images
 from util import load_hdr_image, save_hdr_image, save_ldr_image
 from tqdm import tqdm
 import os
 
-input_path = "../datasets/full_dataset"
-output_path = "../datasets/aug_dataset"
+input_path = "datasets/full_dataset"
+output_path = "datasets/aug_dataset"
 
 if __name__ == "__main__":
     hdrs = os.listdir(input_path)

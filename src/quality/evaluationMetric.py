@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from skimage.metrics import structural_similarity
 
-from fyp.src import util
+import util
 
 def logPSNR(testImageHdrLuminance, referenceImageHdrLuminance):
     """
@@ -39,7 +39,7 @@ def SSIM(testImageTonemapped, referenceImageTonemapped):
     :param referenceImageTonemapped: ldr format after tonemapping  the ground truth hdr image
     :return: the SSIM score
     """
-    return structural_similarity(testImageTonemapped,referenceImageTonemapped, multichannel=True)
+    return structural_similarity(testImageTonemapped,referenceImageTonemapped, channel_axis=2)
 
 
 

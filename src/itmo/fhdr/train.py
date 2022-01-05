@@ -30,17 +30,16 @@ def train(
     # create checkpoints directory if not existing
     os.makedirs(checkpoint_path, exist_ok=True)
 
+    assert torch.cuda.is_available()
+    # use first GPU
+    torch.cuda.set_device(0)
+
     dataset = HDRDataset(dataset_path, batch_size)
     # dataloader which shuffles for every epoch. Also use multiprocessing and pinned memory for extra performance.  
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, 
         multiprocessing_context="spawn")
 
     model = FHDR(iteration_count)
-
-    assert torch.cuda.is_available()
-    # use first GPU
-    torch.cuda.set_device(0)
-
     model.cuda()
 
     # we use l1 and perceptual loss
