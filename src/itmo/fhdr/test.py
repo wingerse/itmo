@@ -56,16 +56,17 @@ def test(checkpoint_path, dataset_path, output_path, batch_size=1, iteration_cou
 
             # for each image in the batch
             for batch_i in range(len(output)):
-                i = batch * batch_size + batch_i
+                # get image number
+                n = data[2][batch_i]
 
                 # get the input ldr, generated output and ground truth, and unprocess them
                 input_u = unpreprocess_ldr(input[batch_i])
                 output_u = unpreprocess_hdr(output[batch_i])
                 gt_hdr_u = unpreprocess_hdr(gt_hdr[batch_i])
 
-                save_ldr_image(input_u, path.join(output_path, "ldr", f"{i}.png"))
-                save_hdr_image(output_u, path.join(output_path, "hdr", f"{i}.hdr"))
-                save_hdr_image(gt_hdr_u, path.join(output_path, "gt_hdr", f"{i}.hdr"))
+                save_ldr_image(input_u, path.join(output_path, "ldr", f"{n}.png"))
+                save_hdr_image(output_u, path.join(output_path, "hdr", f"{n}.hdr"))
+                save_hdr_image(gt_hdr_u, path.join(output_path, "gt_hdr", f"{n}.hdr"))
 
                 # calculating PSNR score
                 mse = mse_loss(mu_tonemap(output[batch_i]), gt_t[batch_i])

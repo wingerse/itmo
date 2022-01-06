@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 from .util import preprocess_hdr, preprocess_ldr
 
 from util import load_hdr_image, load_ldr_image
+from pathlib import Path
 
 class HDRDataset(Dataset):
     """
@@ -27,7 +28,10 @@ class HDRDataset(Dataset):
         hdr = load_hdr_image(self.hdr_paths[i])
         hdr = preprocess_hdr(hdr)
 
-        return (ldr, hdr)
+        # image filename without extension, i.e. image number
+        n = Path(self.ldr_paths[i]).stem
+
+        return (ldr, hdr, n)
 
     def __len__(self):
         # only multiples of batch sizes are returned, remainder is not processed
