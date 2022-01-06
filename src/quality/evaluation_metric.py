@@ -35,7 +35,7 @@ def log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance):
     return log_psnr_value
 
 
-def ssim(test_image_tonemapped, reference_image_tonemapped):
+def ssim(test_image, reference_image):
     """
     This function computes the structural similarity difference between the test image and the reference image.
     It is a measure of the perceptual difference between the two images. The value ranges from 0 to 1 and the closer the value is to 1,
@@ -44,7 +44,7 @@ def ssim(test_image_tonemapped, reference_image_tonemapped):
     :param referenceImageTonemapped: ldr format after tonemapping  the ground truth hdr image
     :return: the SSIM score
     """
-    return structural_similarity(test_image_tonemapped, reference_image_tonemapped, channel_axis=2)
+    return structural_similarity(test_image, reference_image, channel_axis=2)
 
 
 
@@ -63,7 +63,7 @@ def psnr(test_image_tonemapped, reference_image_tonemapped):
     if (mse == 0):  # means that no noise present, PSNR serves no importance here
         return 100
     PIXEL_MAX = 1
-    psnr_value = 20 * log10(PIXEL_MAX/sqrt(mse))
+    psnr_value = 10 * log10(PIXEL_MAX/(mse))
     return psnr_value
 
 # def main():

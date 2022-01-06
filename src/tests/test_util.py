@@ -4,8 +4,18 @@ from quality import evaluation_metric
 import numpy as np
 import pytest
 
+# test luminance
+def test_one_pixel_luminance():
+    assert luminance(np.array([[[0.1,0.2,0.3]]])) == [[0.179]]
+    assert luminance(np.array([[[0.2, 0.3, 0.4]]])) == [[0.279]]
 
 
+def test_four_pixel_luminance():
+    # testing on (2,2,3) dimension
+    assert (luminance(np.array([[[0.1, 0.2, 0.3],[0.1, 0.2, 0.3]],[[0.1, 0.2, 0.3],[0.1, 0.2, 0.3]]])) == [[0.179, 0.179],[0.179, 0.179]]).all() == True
+
+
+# test loading image
 def test_load_existing_ldr_image():
 
     ldr_img_path = "test_images/ldr_test.png"
@@ -49,6 +59,8 @@ def test_equal_save_image():
     saved_img = _load_image ("test_images/test_save_function.hdr")
     assert (np.array(frst_image) == np.array(saved_img)).all() ==True
 
+
+# test saving image
 def test_unequal_saved_image():
     """
     Testing if the np array values of the original image and saved copy of a different image is the same. Assert statement should return false
