@@ -1,36 +1,33 @@
 from .model import FHDR
 import torch
-from torch import nn
-from skimage.metrics import structural_similarity
-import numpy as np
-from .util import mu_tonemap, preprocess_ldr, preprocess_hdr, unpreprocess_hdr
+from .util import preprocess_ldr, unpreprocess_hdr
 
-def fhdr(ldr, gt_hdr, ckpt_path):
-    model = FHDR(1)
-    torch.cuda.set_device(0)
+def fhdr(ldr, ckpt_path, iteration_count=1):
+    """
+    Run the FHDR model on a given ldr image. 
+
+    :param ldr: The ldr image numpy array.
+    :param ckpt_path: The saved checkpoint.
+    :iteration_count: number of FHDR iterations to do, default is 1. 
+    :return: generated hdr image as a numpy array
+    """
+    # use first gpu
+    torch.cuda.set_device(0) 
+
+    model = FHDR(iteration_count)
     model.cuda()
 
-    mse_loss = nn.MSELoss()
-    model.load_state_dict(torch.load(ckpt_path))
+    # load weights and biases from the checkpoint
+    model.load_state_dict(torch.load(ckpt_path)) 
 
-    ldr = preprocess_ldr(ldr)
-    gt_hdr = preprocess_hdr(gt_hdr)
+    ldr = preprocess_ldr(ldr).cuda()
 
     with torch.no_grad():
-        input = ldr.unsqueeze(0)
+        # create batch of only 1 image
+        input = ldr.unsqueeze(0) 
         output = model(input)
 
-        output = output[-1][0]
-
-        # calculating PSNR score
-        mse = mse_loss(mu_tonemap(output), mu_tonemap(gt_hdr))
-        psnr = 10 * np.log10(1 / mse.item())
-
-        generated = unpreprocess_hdr(output)
-        real = unpreprocess_hdr(gt_hdr)
-
-        # calculating SSIM score
-        ssim = structural_similarity(generated, real, multichannel=True)
-
-        return (generated, psnr, ssim)
-
+        # we take the last iteration
+        output = output[-1][0] 
+        output = unpreprocess_hdr(output)
+        return output

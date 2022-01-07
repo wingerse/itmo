@@ -3,11 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-
 class FHDR(nn.Module):
+    """
+    The FHDR model as described in the paper. For more information, read the paper.
+    """
+
     def __init__(self, iteration_count):
-        super(FHDR, self).__init__()
-        print("FHDR model initialised")
+        super().__init__()
 
         self.iteration_count = iteration_count
 
@@ -35,6 +37,7 @@ class FHDR(nn.Module):
             FDF = fb_out + feb1
 
             hrb1 = F.relu(self.hrb1(FDF))
+            del FDF
             out = self.hrb2(self.reflect_pad(hrb1))
             out = self.tanh(out)
             outs.append(out)
@@ -44,7 +47,7 @@ class FHDR(nn.Module):
 
 class FeedbackBlock(nn.Module):
     def __init__(self):
-        super(FeedbackBlock, self).__init__()
+        super().__init__()
 
         self.compress_in = nn.Conv2d(128, 64, kernel_size=1, padding=0)
         self.DRDB1 = DilatedResidualDenseBlock()
@@ -57,18 +60,18 @@ class FeedbackBlock(nn.Module):
 
     def forward(self, x):
         if self.should_reset:
-            self.last_hidden = torch.zeros(x.size()).cuda()
+            self.last_hidden = torch.zeros(x.size(), device=torch.device("cuda:0"))
             self.last_hidden.copy_(x)
             self.should_reset = False
 
-        out1 = torch.cat((x, self.last_hidden), dim=1)
-        out2 = self.compress_in(out1)
+        out = torch.cat((x, self.last_hidden), dim=1)
+        out = self.compress_in(out)
 
-        out3 = self.DRDB1(out2)
-        out4 = self.DRDB2(out3)
-        out5 = self.DRDB3(out4)
+        out = self.DRDB1(out)
+        out = self.DRDB2(out)
+        out = self.DRDB3(out)
 
-        out = F.relu(self.GFF_3x3(out5))
+        out = F.relu(self.GFF_3x3(out))
         self.last_hidden = out
         self.last_hidden = Variable(self.last_hidden.data)
 
@@ -77,7 +80,7 @@ class FeedbackBlock(nn.Module):
 
 class DilatedResidualDenseBlock(nn.Module):
     def __init__(self, nDenselayer=4, growthRate=32):
-        super(DilatedResidualDenseBlock, self).__init__()
+        super().__init__()
 
         nChannels_ = 64
         modules = []
@@ -97,9 +100,9 @@ class DilatedResidualDenseBlock(nn.Module):
             self.last_hidden.copy_(x)
             self.should_reset = False
 
-        cat = torch.cat((x, self.last_hidden), dim=1)
+        out = torch.cat((x, self.last_hidden), dim=1)
 
-        out = self.compress(cat)
+        out = self.compress(out)
         out = self.dense_layers(out)
         out = self.conv_1x1(out)
 
@@ -111,7 +114,7 @@ class DilatedResidualDenseBlock(nn.Module):
 
 class make_dense(nn.Module):
     def __init__(self, nChannels, growthRate, kernel_size=3):
-        super(make_dense, self).__init__()
+        super().__init__()
         self.conv = nn.Conv2d(
             nChannels,
             growthRate,
