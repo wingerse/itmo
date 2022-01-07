@@ -4,10 +4,14 @@ from image_callbacks import *
 from theme import *
 
 class Images:
+    """
+    Object to hold images and necessary info to be passed around in UI functions
+    """
     def __init__(self):
         self.ldr = None
         self.hdr = None
         self.generated = None
+        self.generated_ldr = None
         self.ldr_flag = False
         self.hdr_flag = False
         self.hdr_display = REINHARD
@@ -28,7 +32,7 @@ if __name__ == '__main__':
             title_text = dpg.add_text("LDR to HDR Converter")
             dpg.add_spacer(width=50)
             credit = dpg.add_text("By Ahmed Aiman, Ngu Bing Xian, Yaaseen Edoo & Vanessa Tan\n"
-                                  "Group FIT3161_MA_14\n"
+                                  "Group FIT3161/62_MA_14\n"
                                   "Monash University")
             
         dpg.add_spacer(height=20)
@@ -48,7 +52,7 @@ if __name__ == '__main__':
                 
                 with dpg.group() as ldr_container:
                     ldr_title = dpg.add_text("Original LDR Image")
-                    dpg.add_button(label="Upload LDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG))
+                    dpg.add_button(label="Upload LDR Image", width=UPLOAD_BUTTON_WIDTH, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG))
                     dpg.add_spacer(height=10)
                     
                 dpg.add_spacer(height=20)
@@ -57,24 +61,33 @@ if __name__ == '__main__':
                     hdr_title = dpg.add_text("HDR Reference Image")
                     
                     with dpg.group(horizontal=True):
-                        dpg.add_button(label="Upload HDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG))
-                        dpg.add_listbox(items=tmo_items, num_items=2, width=80, callback=change_tmo_display, user_data=(REFERENCE_HDR_DISPLAY, hdr_container, images))
+                        dpg.add_button(label="Upload HDR Image", width=UPLOAD_BUTTON_WIDTH, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG))
+                        dpg.add_listbox(items=tmo_items, num_items=2, width=LISTBOX_WIDTH, callback=change_tmo_display, user_data=(REFERENCE_HDR_DISPLAY, hdr_container, images))
                                 
             dpg.add_spacer(width=50)
             
-            with dpg.group(indent=700) as generated_container:
-                generated_title = dpg.add_text("Generated Image")
+            with dpg.group(indent=700): 
                 
-                with dpg.group(horizontal=True):
-                    dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=convert_image, user_data=(generated_container, images))   
-                    dpg.add_button(label="Save Image", tag=SAVE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=lambda: dpg.show_item("save_file_dialog"))
-                    dpg.add_listbox(items=tmo_items, num_items=2, width=80, callback=change_tmo_display, user_data=(GENERATED_DISPLAY, generated_container, images))
+                with dpg.group() as generated_container:
+                    generated_title = dpg.add_text("Generated Image")
+                    
+                    with dpg.group(horizontal=True):
+                        dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=BUTTON_WIDTH, height=BUTTON_HEIGHT, enabled=False, callback=convert_image, user_data=(generated_container, images))   
+                        dpg.add_button(label="Save Image", tag=SAVE_BUTTON, width=BUTTON_WIDTH, height=BUTTON_HEIGHT, enabled=False, callback=lambda: dpg.show_item("save_file_dialog"))
+                        dpg.add_listbox(items=tmo_items, num_items=2, width=LISTBOX_WIDTH, callback=change_tmo_display, user_data=(GENERATED_DISPLAY, generated_container, images))
 
-                with dpg.group(show=False, tag=PROGRESS_GROUP):
-                    dpg.add_spacer(height=10)
-                    loading = dpg.add_text("Loading...")
-                    dpg.add_spacer(height=5)
-                    dpg.add_progress_bar(tag=PROGRESS_BAR)                
+                    with dpg.group(show=False, tag=PROGRESS_GROUP):
+                        dpg.add_spacer(height=10)
+                        loading = dpg.add_text("Loading...")
+                        dpg.add_spacer(height=5)
+                        dpg.add_progress_bar(tag=PROGRESS_BAR)     
+                        
+                dpg.add_spacer(height=20)
+
+                with dpg.group(show=False, tag=EVALUATION):
+                    dpg.add_text("Test Evaluation Metric")
+                    dpg.add_text("PSNR = ", tag=PSNR_RESULTS)
+                    dpg.add_text("SSIM = ", tag=SSIM_RESULTS)           
                 
     # file dialog for uploading LDR image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):
@@ -85,7 +98,7 @@ if __name__ == '__main__':
         dpg.add_file_extension(".hdr")
         
     # file dialog for saving generated images in both ldr and hdr formats
-    with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG):
+    with dpg.file_dialog(directory_selector=False, show=False, callback=save_image, id=SAVE_FILE_DIALOG, user_data=(images)):
         dpg.add_file_extension("{.png,.hdr}")
         
     # error modal
