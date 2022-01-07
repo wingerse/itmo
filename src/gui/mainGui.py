@@ -7,12 +7,16 @@ class Images:
     def __init__(self):
         self.ldr = None
         self.hdr = None
+        self.generated = None
         self.ldr_flag = False
         self.hdr_flag = False
+        self.hdr_display = REINHARD
+        self.generated_display = REINHARD
 
 if __name__ == '__main__':
     
     images = Images()
+    tmo_items = [REINHARD, DRAGO]
     
     dpg.create_context()
     dpg.create_viewport(title="LDR to HDR Converter", width=1500, height= 750, x_pos=0, y_pos=0)
@@ -45,12 +49,16 @@ if __name__ == '__main__':
                 with dpg.group() as ldr_container:
                     ldr_title = dpg.add_text("Original LDR Image")
                     dpg.add_button(label="Upload LDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG))
+                    dpg.add_spacer(height=10)
                     
                 dpg.add_spacer(height=20)
                 
                 with dpg.group() as hdr_container:
                     hdr_title = dpg.add_text("HDR Reference Image")
-                    dpg.add_button(label="Upload HDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG))
+                    
+                    with dpg.group(horizontal=True):
+                        dpg.add_button(label="Upload HDR Image", width=150, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_HDR_DIALOG))
+                        dpg.add_listbox(items=tmo_items, num_items=2, width=80, callback=change_tmo_display, user_data=(REFERENCE_HDR_DISPLAY, hdr_container, images))
                                 
             dpg.add_spacer(width=50)
             
@@ -60,19 +68,13 @@ if __name__ == '__main__':
                 with dpg.group(horizontal=True):
                     dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=convert_image, user_data=(generated_container, images))   
                     dpg.add_button(label="Save Image", tag=SAVE_BUTTON, width=100, height=BUTTON_HEIGHT, enabled=False, callback=lambda: dpg.show_item("save_file_dialog"))
+                    dpg.add_listbox(items=tmo_items, num_items=2, width=80, callback=change_tmo_display, user_data=(GENERATED_DISPLAY, generated_container, images))
 
                 with dpg.group(show=False, tag=PROGRESS_GROUP):
                     dpg.add_spacer(height=10)
                     loading = dpg.add_text("Loading...")
                     dpg.add_spacer(height=5)
-                    dpg.add_progress_bar(tag=PROGRESS_BAR)
-                
-                # dpg.add_spacer(width=10)
-                    
-                # with dpg.group(show=False, tag=EVALUATION):
-                #     dpg.add_text("Test Evaluation Metric")
-                #     dpg.add_text("", tag=EVALUATION_RESULTS)
-                
+                    dpg.add_progress_bar(tag=PROGRESS_BAR)                
                 
     # file dialog for uploading LDR image
     with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(ldr_container, images)):
@@ -90,7 +92,7 @@ if __name__ == '__main__':
     with dpg.window(modal=True, show=False, id=ERROR_MODAL, pos=(550, 250), on_close=lambda: dpg.configure_item(PROGRESS_GROUP, show=False), no_resize=True) as error_display:
         error_title = dpg.add_text("An error occured :(")
         dpg.add_spacer(height=10)
-        dpg.add_text("There was a problem generating the image", tag=ERROR_MESSAGE)
+        dpg.add_text("", tag=ERROR_MESSAGE)
 
     # set fonts
     dpg.bind_font(default_font)
@@ -107,12 +109,9 @@ if __name__ == '__main__':
     dpg.bind_theme(global_theme)
     dpg.bind_item_theme(error_display, error_theme)
     
-    # dpg.show_style_editor()
-
     # start display
     dpg.show_viewport()
     dpg.set_primary_window("main", True)
-    # dpg.start_dearpygui()
     while dpg.is_dearpygui_running():
         if images.ldr_flag and images.hdr_flag:
             dpg.configure_item(GENERATE_BUTTON, enabled=True)
