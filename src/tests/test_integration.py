@@ -9,10 +9,21 @@ import os
 from quality import evaluation_metric
 
 
-def test_itmo():
+# This file will test the whole algorithm together without the UI.
+
+def test_whole_algorithm_together():
+    """
+    This function will load a valid ldr image, fhdr itmo with the latest checkpoint is being applied on that ldr image.
+    Once the transformation is done, a generated hdr image is obtained.
+    The generated hdr image is tone mapped to an ldr format to be able to display on a normal screen.
+    Then we check if the coresponding files are created properly and then we calculate the psnr and ssim score
+    to make sure that our generated model is better than the ldr image.
+    """
+
+
     ldr = load_ldr_image("test_images/ldr_test.png")
 
-    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")
+    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")    # applying fhdr itmo with latest checkpoint
     save_hdr_image(hdr, "test_outputs/fhdr.hdr")
 
     hdr_t = reinhard(hdr)
@@ -22,7 +33,7 @@ def test_itmo():
 
     gt_hdr = load_hdr_image("test_images/hdr_test.hdr")
     ground_truth_tmo = reinhard(gt_hdr)
-    # print(evaluationMetric.PSNR(hdr_t,ground_truth_tmo))
-    # print(evaluationMetric.PSNR(ldr, ground_truth_tmo))
+
+    # checking if the tone mapped generated hdr image gives better scores than the original ldr image
     assert evaluation_metric.psnr(hdr_t, ground_truth_tmo) > evaluation_metric.psnr(ldr, ground_truth_tmo)
     assert evaluation_metric.ssim(hdr_t, ground_truth_tmo) > evaluation_metric.ssim(ldr, ground_truth_tmo)
