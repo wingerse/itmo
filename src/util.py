@@ -86,6 +86,9 @@ def change_luminance(img, old_l, new_l):
     return img
 
 def downsize_image(img, height, width):
+    """
+    Downsize an image if its dimensions exceed the limits.
+    """
     # scale according to the dimension that is further away from the limit
     if (MAX_IMAGE_HEIGHT / height) < (MAX_IMAGE_WIDTH / width):
         scale = MAX_IMAGE_HEIGHT / height

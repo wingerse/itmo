@@ -4,7 +4,7 @@ sys.path.append('../')
 import dearpygui.dearpygui as dpg
 import cv2
 import numpy as np
-from constants import *
+from .constants import *
 from util import *
 from tmo import reinhard, drago
 from itmo import fhdr
@@ -26,7 +26,7 @@ def display_image(image, window, registry_tag, image_tag):
     
     height = image.shape[0]
     width = image.shape[1]
-    
+        
     # resize image if it is too big
     if height > MAX_IMAGE_HEIGHT or width > MAX_IMAGE_WIDTH:
         image, height, width = downsize_image(image, height, width)
@@ -68,8 +68,8 @@ def upload_ldr(sender, app_data, user_data):
     
     file_name = app_data['file_name']
     image_path = app_data['file_path_name']
-    images = user_data[1]
     window = user_data[0]
+    images = user_data[1]
     
     # load and store uploaded LDR image
     try:
@@ -79,32 +79,10 @@ def upload_ldr(sender, app_data, user_data):
         return
     images.ldr_flag = True
     
-    # convert colour to rgba and display
+    # display and enable generate button
     display_image(images.ldr, window, LDR_REGISTRY, ORIGINAL_LDR_IMAGE)
+    dpg.configure_item(GENERATE_BUTTON, enabled=True)
     
-   
-def upload_hdr(sender, app_data, user_data):
-    """
-    Callback for uploading HDR reference image
-    """
-    
-    file_name = app_data['file_name']
-    image_path = app_data['file_path_name']
-    images = user_data[1]
-    window = user_data[0]
-    
-    # load and store uploaded HDR reference image
-    try:
-        images.hdr = load_hdr_image(image_path)
-    except Exception as e:
-        display_error(e, "Image with file name '{}' could not be found. \nRemember to include file extensions!".format(file_name))
-        return
-    images.hdr_flag = True
-    
-    # tone map HDR image to LDR for display
-    reference_hdr = tone_map(images.hdr, images.hdr_display)
-    display_image(reference_hdr, window, HDR_REGISTRY, REFERENCE_HDR_IMAGE)
-
 
 def save_image(sender, app_data, user_data):
     """
@@ -127,14 +105,13 @@ def convert_image(sender, app_data, user_data):
     """
     Using FHDR model to convert LDR image to HDR image
     """
-    
-    # delete texture registry and image if currently exists (to be replaced with new ones),
-    # hide evaluation and disable save image button temporarily while converting
+    # delete current generated image if it exists
     if dpg.does_alias_exist(GENERATED_IMAGE):
         dpg.delete_item(GENERATED_IMAGE)
         dpg.delete_item(GENERATED_REGISTRY)
-        dpg.configure_item(EVALUATION, show=False)
-        dpg.configure_item(SAVE_BUTTON, enabled=False)
+    
+    # disable save image button temporarily while converting
+    dpg.configure_item(SAVE_BUTTON, enabled=False)
     
     # show progress bar to generate image
     dpg.configure_item(PROGRESS_GROUP, show=True)
@@ -147,17 +124,14 @@ def convert_image(sender, app_data, user_data):
     
     # inverse tone mapping to convert the LDR image to HDR using the FHDR model
     try:
-        images.generated, psnr, ssim = fhdr(
-        images.ldr, 
-        images.hdr,
-        ".././itmo/fhdr/checkpoints/FHDR-iter-2.ckpt")
+        images.generated = fhdr(images.ldr, "src/itmo/fhdr/checkpoints/ours.ckpt")
     except Exception as e:
         display_error(e, "There was a problem generating the image.")
         return
         
     dpg.set_value(PROGRESS_BAR, 0.6)
     
-    images.generated_ldr = tone_map(images.generated, images.generated_display)
+    images.generated_ldr = tone_map(images.generated, images.tmo)
 
     # update progress bar and hide it
     dpg.set_value(PROGRESS_BAR, 1.0)
@@ -165,9 +139,6 @@ def convert_image(sender, app_data, user_data):
         
     # display image, update evaluation and enable save button
     display_image(images.generated_ldr, window, GENERATED_REGISTRY, GENERATED_IMAGE)
-    dpg.configure_item(PSNR_RESULTS, default_value="PSNR = {0:.4f}".format(psnr))
-    dpg.configure_item(SSIM_RESULTS, default_value="SSIM = {0:.4f}".format(ssim))
-    dpg.configure_item(EVALUATION, show=True)
     dpg.configure_item(SAVE_BUTTON, enabled=True)
     
     
@@ -177,40 +148,21 @@ def change_tmo_display(sender, app_data, user_data):
     """
         
     tmo_technique = app_data
-    display = user_data[0]
-    window = user_data[1]
-    images = user_data[2]
+    images = user_data
     
     # update display tmo technique in Images object
-    if display == REFERENCE_HDR_DISPLAY and images.hdr_display != tmo_technique:
-        images.hdr_display = tmo_technique
-        
-        # get information to redisplay image if it already exists
-        if dpg.does_alias_exist(REFERENCE_HDR_IMAGE):
-            image = images.hdr
-            registry = HDR_REGISTRY
-            image_alias = REFERENCE_HDR_IMAGE
-        else:
-            return
-        
-    elif display == GENERATED_DISPLAY and images.generated_display != tmo_technique:
-        images.generated_display = tmo_technique
+    if images.tmo != tmo_technique:
+        images.tmo = tmo_technique
         
         # get information to redisplay image if it already exists
         if dpg.does_alias_exist(GENERATED_IMAGE):
-            image = images.generated
-            registry = GENERATED_REGISTRY
-            image_alias = GENERATED_IMAGE
+            tone_mapped_image = tone_map(images.generated, tmo_technique)
+            display_image(tone_mapped_image, GENERATED_CONTAINER, GENERATED_REGISTRY, GENERATED_IMAGE)
+            
+            images.generated_ldr = tone_mapped_image
         else:
             return
         
     else:
         return
-        
-    # redisplay image with new chosen tmo technique
-    image = tone_map(image, tmo_technique)
-    display_image(image, window, registry, image_alias)
-    
-    # update generated ldr in Images object
-    if display == GENERATED_DISPLAY:
-        images.generated_ldr = image
+
