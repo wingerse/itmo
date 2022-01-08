@@ -36,3 +36,9 @@ with dpg.theme() as error_theme:
         dpg.add_theme_color(dpg.mvThemeCol_ModalWindowDimBg, (245, 83, 83, 100), category=dpg.mvThemeCat_Core)
         dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 40, 40, category=dpg.mvThemeCat_Core)
         
+        
+with dpg.theme() as save_theme:
+    
+    with dpg.theme_component(dpg.mvAll):
+        dpg.add_theme_color(dpg.mvThemeCol_TitleBgActive, (37, 37, 38), category=dpg.mvThemeCat_Core)
+        

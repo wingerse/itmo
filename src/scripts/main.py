@@ -47,13 +47,13 @@ if __name__ == '__main__':
         dpg.add_spacer(height=10)
         
         instructions = dpg.add_text("Welcome to our LDR to HDR Image Converter!\n"
-                                    "Start by uploading an LDR image and a reference HDR image. But do make sure that they are of the same scene!\n" 
+                                    "Start by uploading an LDR image and choosing a tone mapping operator.\n" 
                                     "Once you are ready, simply click the 'Generate' button to start the conversion.\n"
                                     "You can then save the generated image by clicking the 'Save Image' button and the image will be saved in both .hdr and .png formats.")
         
         dpg.add_spacer(height=10)
         dpg.add_separator()
-        dpg.add_spacer(height=10)
+        dpg.add_spacer(height=20)
         
         with dpg.group():
             tmo_title = dpg.add_text("Tone Mapping Operator")
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                                     "Select a technique from below to choose how you want your HDR image to be displayed.")
             dpg.add_spacer(height=10)
             tmo_listbox = dpg.add_listbox(items=tmo_items, num_items=2, width=LISTBOX_WIDTH, callback=change_tmo_display, user_data=(images))
-            dpg.add_spacer(height=20)
+            dpg.add_spacer(height=30)
         
         with dpg.group(horizontal=True):
             
@@ -100,6 +100,10 @@ if __name__ == '__main__':
         error_title = dpg.add_text("An error occured :(")
         dpg.add_spacer(height=10)
         dpg.add_text("", tag=ERROR_MESSAGE)
+    
+    # save modal
+    with dpg.window(modal=True, show=False, id=SAVE_MODAL, pos=(550, 250), no_resize=True) as save_display:
+        save_message = dpg.add_text("Saved successfully!")
 
     # set fonts
     dpg.bind_font(default_font)
@@ -113,10 +117,12 @@ if __name__ == '__main__':
     dpg.bind_item_font(generated_title, h1)
     dpg.bind_item_font(loading, normal_text)
     dpg.bind_item_font(error_title, h1)
-    
+    dpg.bind_item_font(save_message, h1)
+
     # set the theme
     dpg.bind_theme(global_theme)
     dpg.bind_item_theme(error_display, error_theme)
+    dpg.bind_item_theme(save_display, save_theme)
     
     # start display
     dpg.show_viewport()

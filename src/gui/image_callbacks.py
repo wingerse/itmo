@@ -75,7 +75,7 @@ def upload_ldr(sender, app_data, user_data):
     try:
         images.ldr = load_ldr_image(image_path)
     except Exception as e:
-        display_error(e, "Image with file name '{}' could not be found.\nRemember to include file extensions!".format(file_name))
+        display_error(e, "The following image file could not be found:\n'{}'\nRemember to include file extensions!".format(file_name))
         return
     images.ldr_flag = True
     
@@ -99,6 +99,9 @@ def save_image(sender, app_data, user_data):
     # save both HDR and LDR images
     save_hdr_image(images.generated, hdr_name)
     save_ldr_image(images.generated_ldr, ldr_name)
+    
+    # show save modal
+    dpg.configure_item(SAVE_MODAL, show=True)
     
     
 def convert_image(sender, app_data, user_data):
