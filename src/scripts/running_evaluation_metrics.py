@@ -13,27 +13,26 @@ from quality import evaluation_metric
 
 
 def main():
-    test_image_hdr = load_hdr_image("test_images/generated_hdr.hdr")
-    test_image_hdr_luminance = luminance(test_image_hdr)
+    """
+    running the evaluation metric file
+    :return: None
+    """
+    test_image_hdr = load_hdr_image("test_images/generated_hdr.hdr")      # generated itmo hdr file
+    test_image_hdr_luminance = luminance(test_image_hdr)                   # calculating luminance
 
 
 
-    reference_image_hdr = load_hdr_image('test_images/gt_hdr.hdr')
-    reference_image_hdr_luminance = luminance(reference_image_hdr)
+    reference_image_hdr = load_hdr_image('test_images/gt_hdr.hdr')        # reference hdr file
+    reference_image_hdr_luminance = luminance(reference_image_hdr)         # luminance for hdr file
 
-    print(f"log PSNR value is {evaluation_metric.log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance)} dB")
+    print(f"log PSNR value is {evaluation_metric.log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance)} dB")     #log psnr between test image and reference image
 
-    # test_image_tonemapped = load_ldr_image('C:/Users/ASus/Documents/Final Year Project/latest fyp codes 5-01-21/fyp/test_images/generated_tmo.jpg')
-    test_image_tonemapped = load_ldr_image('test_images/generated_tmo.jpg')
-    # testImageTonemappedLuminance = util.luminance(testImageTonemapped)
+    test_image_tonemapped = load_ldr_image('test_images/generated_tmo.jpg')      #  tone mapped test image
 
-    # reference_image_tonemapped = load_ldr_image('C:/Users/ASus/Documents/Final Year Project/latest fyp codes 5-01-21/fyp/test_images/gt_tmo.jpg')
-    reference_image_tonemapped = load_ldr_image('test_images/gt_tmo.jpg')
+    reference_image_tonemapped = load_ldr_image('test_images/gt_tmo.jpg')      # tone mapped reference image
 
-    # referenceImageTonemappedLuminance = util.luminance(referenceImageTonemapped)
-    #
 
-    print(f" SSIM value is {evaluation_metric.ssim(test_image_tonemapped, reference_image_tonemapped)} ")
+    print(f" SSIM value is {evaluation_metric.ssim(test_image_hdr, reference_image_hdr)} ")
     print(f" PSNR value is {evaluation_metric.psnr(test_image_tonemapped, reference_image_tonemapped)} dB")
 
 
