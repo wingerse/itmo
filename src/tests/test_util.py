@@ -37,17 +37,15 @@ def test_load_existing_ldr_image():
 
 
 
+
 def test_load_non_existing_ldr_image():
     """
-    testing for loading a non-existing ldr image and checking if a proper exception with valid exception message is thrown.
+    testing for loading a non-existing ldr image and checking if an exception is thrown.
     """
 
     ldr_img_path = "test_images/ldr_tst.png"
-    try:
+    with pytest.raises(Exception):
         load_ldr_image(ldr_img_path)
-    except Exception as e:
-        assert str(e) == f"invalid path: {ldr_img_path}"
-
 
 def test_load_existing_hdr_image():
     """
@@ -60,14 +58,12 @@ def test_load_existing_hdr_image():
 
 def test_load_non_existing_hdr_image():
     """
-    testing for loading a non-existing hdr image and checking if a proper exception with valid exception message is thrown.
+    testing for loading a non-existing hdr image and checking if an exception is thrown.
     """
 
     hdr_img_path = "test_images/hdr_tst.hdr"
-    try:
+    with pytest.raises(Exception):
         load_hdr_image(hdr_img_path)
-    except Exception as e:
-        assert str(e) == f"invalid path: {hdr_img_path}"
 
 
 
@@ -85,15 +81,14 @@ def test_save_ldr_image():
 
 def test_save_ldr_image_to_invalid_location():
     """
-    Testing if saving a ldr image to an invalid location throws an exception and check if proper exception message is displayed
+    Testing if saving a ldr image to an invalid location throws an exception
     """
-    try:
-        img_path = "test_images/ldr_test2.jpg"
-        frst_image = load_hdr_image(img_path)
+    img_path = "test_images/ldr_test2.jpg"
+    frst_image = load_hdr_image(img_path)
+    with pytest.raises(Exception):
         save_img_destination_path = "tst_images/test2_save_ldr_image.jpg"
         save_hdr_image(frst_image,save_img_destination_path)
-    except Exception as e:
-        assert str(e) == f"count not save image to {save_img_destination_path}"
+
 
 
 
@@ -111,6 +106,7 @@ def test_unequal_save_ldr_image():
     unequal_img_path = "test_images/ldr_test.png"
     unequal_img = load_hdr_image(unequal_img_path)
     assert (np.array(unequal_img) != np.array(saved_img)).any()
+
 def test_save_hdr_image():
     """
     Testing if the np array values of the original image and saved copy of same image is the same. Assert statement should return True
@@ -125,15 +121,14 @@ def test_save_hdr_image():
 
 def test_save_hdr_image_to_invalid_location():
     """
-    Testing if saving a hdr image to an invalid location throws an exception and check if proper exception message is displayed
+    Testing if saving a hdr image to an invalid location throws an exception
     """
-    try:
-        img_path = "test_images/hdr_test2.hdr"
-        frst_image = load_hdr_image(img_path)
+    img_path = "test_images/hdr_test2.hdr"
+    frst_image = load_hdr_image(img_path)
+    with pytest.raises(Exception):
         save_img_destination_path = "tst_images/test2_save_hdr_image.hdr"
         save_hdr_image(frst_image,save_img_destination_path)
-    except Exception as e:
-        assert str(e) == f"count not save image to {save_img_destination_path}"
+
 
 
 
