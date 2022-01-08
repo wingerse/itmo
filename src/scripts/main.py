@@ -47,7 +47,7 @@ if __name__ == '__main__':
         dpg.add_spacer(height=10)
         
         instructions = dpg.add_text("Welcome to our LDR to HDR Image Converter!\n"
-                                    "Start by uploading an LDR image and choosing a tone mapping operator.\n" 
+                                    "Start by selecting an LDR image file and choosing a tone mapping operator.\n" 
                                     "Once you are ready, simply click the 'Generate' button to start the conversion.\n"
                                     "You can then save the generated image by clicking the 'Save Image' button and the image will be saved in both .hdr and .png formats.")
         
@@ -67,7 +67,7 @@ if __name__ == '__main__':
             
             with dpg.group(tag=LDR_CONTAINER):
                 ldr_title = dpg.add_text("Original LDR Image")
-                dpg.add_button(label="Upload LDR Image", width=UPLOAD_BUTTON_WIDTH, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(UPLOAD_LDR_DIALOG))
+                dpg.add_button(label="Select LDR Image", width=SELECT_BUTTON_WIDTH, height=BUTTON_HEIGHT, callback=lambda: dpg.show_item(SELECT_LDR_DIALOG))
                 dpg.add_spacer(height=10)
                     
             dpg.add_spacer(width=50)
@@ -87,8 +87,8 @@ if __name__ == '__main__':
                     dpg.add_spacer(height=5)
                     dpg.add_progress_bar(tag=PROGRESS_BAR)    
                 
-    # file dialog for uploading LDR image
-    with dpg.file_dialog(directory_selector=False, show=False, callback=upload_ldr, id=UPLOAD_LDR_DIALOG, user_data=(LDR_CONTAINER, images)):
+    # file dialog for selecting an LDR image file
+    with dpg.file_dialog(directory_selector=False, show=False, callback=select_ldr, id=SELECT_LDR_DIALOG, user_data=(LDR_CONTAINER, images)):
         dpg.add_file_extension("{.png,.jpg,.jpeg}")
         
     # file dialog for saving generated images in both ldr and hdr formats

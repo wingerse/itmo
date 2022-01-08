@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-MAX_IMAGE_HEIGHT = 600
+MAX_IMAGE_HEIGHT = 700
 MAX_IMAGE_WIDTH = 600
 
 def _load_image(path):
@@ -85,20 +85,24 @@ def change_luminance(img, old_l, new_l):
         img[..., i] = img[..., i] * ratio
     return img
 
-def downsize_image(img, height, width):
+def scale_image(img, height, width):
     """
-    Downsize an image if its dimensions exceed the limits.
+    Downscale an image if any of its dimensions exceed the limit or 
+    upscale an image if both of its dimensions are under the limit.
+    Aspect ratio is preserved.
     """
-    # scale according to the dimension that is further away from the limit
+    # scale according to the dimension that is 
+    # furthest away from the limit (when downscaling)
+    # closest to the limit (when upscaling)
     if (MAX_IMAGE_HEIGHT / height) < (MAX_IMAGE_WIDTH / width):
         scale = MAX_IMAGE_HEIGHT / height
     else:           
-        scale = MAX_IMAGE_WIDTH / width
+        scale = MAX_IMAGE_WIDTH / width  
     
     height = int(img.shape[0] * scale)
     width = int(img.shape[1] * scale)
     dim = (width, height)
 
     # resize image
-    downsized_image = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
-    return downsized_image, height, width
+    scaled_image = cv2.resize(img, dim)
+    return scaled_image, height, width

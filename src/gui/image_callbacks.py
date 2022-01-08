@@ -35,9 +35,8 @@ def display_image(image, window, registry_tag, image_tag):
     height = image.shape[0]
     width = image.shape[1]
         
-    # resize image if it is too big
-    if height > MAX_IMAGE_HEIGHT or width > MAX_IMAGE_WIDTH:
-        image, height, width = downsize_image(image, height, width)
+    # resize image if necessary
+    image, height, width = scale_image(image, height, width)
         
     image = cv2.cvtColor(image.astype(np.float32), cv2.COLOR_RGB2RGBA)
         
@@ -73,9 +72,9 @@ def tone_map(image, tmo_technique):
     return image
     
 
-def upload_ldr(sender, app_data, user_data):
+def select_ldr(sender, app_data, user_data):
     """
-    Callback for uploading LDR image.
+    Callback for opening and loading an LDR image file.
     """
     
     file_name = app_data['file_name']
@@ -83,7 +82,7 @@ def upload_ldr(sender, app_data, user_data):
     window = user_data[0]
     images = user_data[1]
     
-    # load and store uploaded LDR image
+    # load and store LDR image
     try:
         images.ldr = load_ldr_image(image_path)
     except Exception as e:

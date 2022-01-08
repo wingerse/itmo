@@ -4,13 +4,13 @@ Constants used in the user interface. This includes width, height or item tags.
 
 BUTTON_HEIGHT = 40
 BUTTON_WIDTH = 100
-UPLOAD_BUTTON_WIDTH = 150
+SELECT_BUTTON_WIDTH = 150
 LISTBOX_WIDTH = 150
 DRAGO = " Drago "
 REINHARD = " Reinhard "
 LDR_CONTAINER = "ldr_container"
 GENERATED_CONTAINER = "generated_container"
-UPLOAD_LDR_DIALOG = "upload_ldr_dialog"
+SELECT_LDR_DIALOG = "select_ldr_dialog"
 SAVE_FILE_DIALOG = "save_file_dialog"
 GENERATE_BUTTON = "generate_button"
 SAVE_BUTTON = "save_button"
