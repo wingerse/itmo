@@ -11,7 +11,10 @@ from itmo import fhdr
 
 def display_error(error, message):
     """
-    Helper function to display error modal with custom message
+    Helper function to display error modal with custom message.
+    
+    :param error: The error caught
+    :param message: String to be displayed in the error modal
     """
     
     dpg.configure_item(ERROR_MESSAGE, default_value=message)
@@ -21,7 +24,12 @@ def display_error(error, message):
     
 def display_image(image, window, registry_tag, image_tag):
     """
-    Helper function to add image
+    Helper function to display image.
+    
+    :param image: numpy array that represents image to be displayed
+    :param window: Container that the image will be displayed in
+    :param registry_tag: Alias for texture registry that should contain the new texture
+    :param image_tag: Alias for the image that should be displayed 
     """
     
     height = image.shape[0]
@@ -46,7 +54,11 @@ def display_image(image, window, registry_tag, image_tag):
 
 def tone_map(image, tmo_technique):
     """
-    Helper function to tone map HDR images to LDR for display
+    Helper function to tone map HDR images to LDR for display.
+    
+    :param image: numpy array of image to be tone mapped
+    :param tmo_technique: The technique chosen for tone mapping (Reinhard or Drago)
+    :return: None if there is an error and tone mapped image (in numpy array format) if successful
     """
     
     try:
@@ -63,7 +75,7 @@ def tone_map(image, tmo_technique):
 
 def upload_ldr(sender, app_data, user_data):
     """
-    Callback for uploading LDR image
+    Callback for uploading LDR image.
     """
     
     file_name = app_data['file_name']
@@ -86,7 +98,7 @@ def upload_ldr(sender, app_data, user_data):
 
 def save_image(sender, app_data, user_data):
     """
-    Callback for saving image
+    Callback for saving image.
     """
     
     images = user_data
@@ -97,8 +109,12 @@ def save_image(sender, app_data, user_data):
     ldr_name = file_path_name + ".png"
         
     # save both HDR and LDR images
-    save_hdr_image(images.generated, hdr_name)
-    save_ldr_image(images.generated_ldr, ldr_name)
+    try:
+        save_hdr_image(images.generated, hdr_name)
+        save_ldr_image(images.generated_ldr, ldr_name)
+    except Exception as e:
+        display_error(e, "There was a problem saving the images.")
+        return
     
     # show save modal
     dpg.configure_item(SAVE_MODAL, show=True)
@@ -106,7 +122,7 @@ def save_image(sender, app_data, user_data):
     
 def convert_image(sender, app_data, user_data):
     """
-    Using FHDR model to convert LDR image to HDR image
+    Using FHDR model to convert LDR image to HDR image.
     """
     # delete current generated image if it exists
     if dpg.does_alias_exist(GENERATED_IMAGE):
@@ -140,14 +156,14 @@ def convert_image(sender, app_data, user_data):
     dpg.set_value(PROGRESS_BAR, 1.0)
     dpg.configure_item(PROGRESS_GROUP, show=False)
         
-    # display image, update evaluation and enable save button
+    # display image and enable save button
     display_image(images.generated_ldr, window, GENERATED_REGISTRY, GENERATED_IMAGE)
     dpg.configure_item(SAVE_BUTTON, enabled=True)
     
     
 def change_tmo_display(sender, app_data, user_data):
     """
-    Callback when tone mapping technique used to display HDR images is changed (Drago or Reinhard)
+    Callback when tone mapping operator used to display HDR images is changed (Reinhard or Drago).
     """
         
     tmo_technique = app_data
@@ -157,7 +173,7 @@ def change_tmo_display(sender, app_data, user_data):
     if images.tmo != tmo_technique:
         images.tmo = tmo_technique
         
-        # get information to redisplay image if it already exists
+        # redisplay image if it already exists
         if dpg.does_alias_exist(GENERATED_IMAGE):
             tone_mapped_image = tone_map(images.generated, tmo_technique)
             display_image(tone_mapped_image, GENERATED_CONTAINER, GENERATED_REGISTRY, GENERATED_IMAGE)

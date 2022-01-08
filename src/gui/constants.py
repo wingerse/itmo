@@ -1,3 +1,7 @@
+"""
+Constants used in the user interface. This includes width, height or item tags.
+"""
+
 BUTTON_HEIGHT = 40
 BUTTON_WIDTH = 100
 UPLOAD_BUTTON_WIDTH = 150
