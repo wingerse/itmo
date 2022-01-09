@@ -1,7 +1,7 @@
 import include_parent_path
 from tmo.util import logmean
 from util import apply_gamma, change_luminance, load_hdr_image, remove_gamma, save_hdr_image, save_ldr_image, load_ldr_image, luminance, _load_image, _save_image
-from quality import evaluation_metric
+from quality import metrics
 import numpy as np
 import pytest
 from itmo.fhdr.util import preprocess_hdr, preprocess_ldr, unpreprocess_hdr, unpreprocess_ldr

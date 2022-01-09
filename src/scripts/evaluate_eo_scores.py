@@ -10,10 +10,8 @@ from util import load_hdr_image
 from skimage.metrics import structural_similarity
 import os
 from os import path
-
-def mu_tonemap(img):
-    MU = 5000.0
-    return np.log(1.0 + MU * (img + 1.0) / 2.0) / np.log(1.0 + MU)
+from tmo import mu_tonemap
+from quality import metrics
 
 def evaluate_eo_scores(eo):
     """
@@ -28,9 +26,8 @@ def evaluate_eo_scores(eo):
         b = load_hdr_image(path.join("datasets/eo_results/generated/", eo + image))
         a_t = mu_tonemap(a)
         b_t = mu_tonemap(b)
-        mse = np.mean((a_t - b_t)**2)
-        psnr += 10 * np.log10(1 / mse)
-        ssim += structural_similarity(a, b, channel_axis=2)
+        psnr += metrics.psnr(a_t, b_t)
+        ssim += metrics.ssim(a, b)
 
     # take averages
     psnr /= len(images)

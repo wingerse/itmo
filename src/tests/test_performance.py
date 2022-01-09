@@ -6,7 +6,7 @@ from util import load_hdr_image, save_hdr_image, save_ldr_image, load_ldr_image
 import numpy as np
 import pytest
 import os
-from quality import evaluation_metric
+from quality import metrics
 import time
 from timeit import default_timer
 
@@ -36,8 +36,8 @@ def running_whole_algorithm_together():
     ground_truth_tmo = reinhard(gt_hdr)
 
     # checking if the tone mapped generated hdr image gives better scores than the original ldr image
-    assert evaluation_metric.psnr(hdr_t, ground_truth_tmo) > evaluation_metric.psnr(ldr, ground_truth_tmo)
-    assert evaluation_metric.ssim(hdr_t, ground_truth_tmo) > evaluation_metric.ssim(ldr, ground_truth_tmo)
+    assert metrics.psnr(hdr_t, ground_truth_tmo) > metrics.psnr(ldr, ground_truth_tmo)
+    assert metrics.ssim(hdr_t, ground_truth_tmo) > metrics.ssim(ldr, ground_truth_tmo)
 
 
 def test_benchmark(benchmark):

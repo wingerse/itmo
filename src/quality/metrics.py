@@ -1,17 +1,7 @@
-import sys
-# sys.path.append("../")
-# import sys
-# sys.path.insert(0, '../src/')
 import math
-from math import log10, sqrt
-import imageio
-import os
-import cv2
+from math import log10
 import numpy as np
 from skimage.metrics import structural_similarity
-from util import change_luminance, luminance, save_hdr_image, save_ldr_image, load_ldr_image, load_hdr_image, remove_gamma, apply_gamma,_save_image,_load_image
-
-# from fyp.src import util
 
 def log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance):
     """
@@ -65,30 +55,3 @@ def psnr(test_image_tonemapped, reference_image_tonemapped):
     PIXEL_MAX = 1
     psnr_value = 10 * log10(PIXEL_MAX/(mse))
     return psnr_value
-
-# def main():
-#
-#
-#     test_image_hdr = util.load_hdr_image('./generated_hdr.hdr')
-#     test_image_hdr_luminance = util.luminance(test_image_hdr)
-#
-#
-#     reference_image_hdr = util.load_hdr_image('./gt_hdr.hdr')
-#     reference_image_hdr_luminance = util.luminance(reference_image_hdr)
-#
-#     print(f"log PSNR value is {log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance)} dB")
-#
-#     test_image_tonemapped = util.load_ldr_image('./generated_tmo.jpg')
-#     # testImageTonemappedLuminance = util.luminance(testImageTonemapped)
-#     #
-#     reference_image_tonemapped = util.load_ldr_image('./gt_tmo.jpg')
-#     #
-#     # referenceImageTonemappedLuminance = util.luminance(referenceImageTonemapped)
-#     #
-#
-#     print(f" SSIM value is {ssim(test_image_tonemapped, reference_image_tonemapped)} ")
-#     print(f" PSNR value is {psnr(test_image_tonemapped, reference_image_tonemapped)} dB")
-#
-#
-# if __name__ == '__main__':
-#     main()
