@@ -113,7 +113,7 @@ if __name__ == '__main__':
         dpg.add_file_extension("{.png,.hdr}")
         
     # error modal
-    with dpg.window(modal=True, show=False, id=ERROR_MODAL, pos=(550, 250), on_close=lambda: dpg.configure_item(PROGRESS_GROUP, show=False), no_resize=True) as error_display:
+    with dpg.window(modal=True, show=False, id=ERROR_MODAL, height=ERROR_HEIGHT, pos=(550, 250), on_close=lambda: dpg.configure_item(PROGRESS_GROUP, show=False), no_resize=True) as error_display:
         error_title = dpg.add_text("An error occured :(")
         dpg.add_spacer(height=10)
         dpg.add_text("", tag=ERROR_MESSAGE)

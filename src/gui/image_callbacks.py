@@ -66,6 +66,7 @@ def tone_map(image, tmo_technique):
             image = drago(image)
     except Exception as e:
         display_error(e, "There was a problem displaying the image.")
+        raise Exception(e)
         return
     
     return image
@@ -86,6 +87,7 @@ def inverse_tone_map(image, itmo_technique):
             image = linear(image)
     except Exception as e:
         display_error(e, "There was a problem converting the image.")
+        raise Exception(e)
         return
     
     return image
@@ -151,9 +153,6 @@ def change_tmo_display(sender, app_data, user_data):
             try:
                 tone_mapped_image = tone_map(images.generated, tmo_technique)
             except:
-                # update progress bar and hide it
-                dpg.set_value(PROGRESS_BAR, 1.0)
-                dpg.configure_item(PROGRESS_GROUP, show=False)
                 return
             
             dpg.set_value(PROGRESS_BAR, 0.7)
