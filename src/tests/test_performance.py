@@ -11,50 +11,69 @@ import time
 from timeit import default_timer
 
 
-def running_function1():
+
+def running_whole_algorithm_together():
+    """
+    This function will load a valid ldr image, fhdr itmo with the latest checkpoint is being applied on that ldr image.
+    Once the transformation is done, a generated hdr image is obtained.
+    The generated hdr image is tone mapped to an ldr format to be able to display on a normal screen.
+    Then we check if the coresponding files are created properly and then we calculate the psnr and ssim score
+    to make sure that our generated model is better than the ldr image.
+    """
+
+
     ldr = load_ldr_image("test_images/ldr_test.png")
 
-    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")
+    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")    # applying fhdr itmo with latest checkpoint
     save_hdr_image(hdr, "test_outputs/fhdr.hdr")
 
     hdr_t = reinhard(hdr)
     save_ldr_image(hdr_t, "test_outputs/fhdr.png")
-    assert os.path.isfile("test_outputs/fhdr.hdr") == True
-    assert os.path.isfile("test_outputs/fhdr.png") == True
+    assert os.path.isfile("test_outputs/fhdr.hdr")
+    assert os.path.isfile("test_outputs/fhdr.png")
 
     gt_hdr = load_hdr_image("test_images/hdr_test.hdr")
     ground_truth_tmo = reinhard(gt_hdr)
-    # print(evaluationMetric.PSNR(hdr_t,ground_truth_tmo))
-    # print(evaluationMetric.PSNR(ldr, ground_truth_tmo))
+
+    # checking if the tone mapped generated hdr image gives better scores than the original ldr image
     assert evaluation_metric.psnr(hdr_t, ground_truth_tmo) > evaluation_metric.psnr(ldr, ground_truth_tmo)
     assert evaluation_metric.ssim(hdr_t, ground_truth_tmo) > evaluation_metric.ssim(ldr, ground_truth_tmo)
 
 
-# print(test_itmo())
 def test_benchmark(benchmark):
-    benchmark(running_function1)
+    """
+    benchmarking to run the whole algorithm together five times to see the min, max, mean, median, standard deviation
+    """
+    benchmark(running_whole_algorithm_together())
 
 
-def running_function2(filename):
+def running_fhdr_and_tonemap(filename):
+    """
+    transform input image to hdr and tone map it to ldr format
+    :param filename: ldr image to do the fhdr transformation on
+    """
     ldr = load_ldr_image("test_images/" + filename)
     hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")
     save_ldr_image(drago(hdr), "test_outputs/" + filename)
 
 
 def test_time_for_four_runs():
+    """
+    running the fhdr and tmo several times to see the behavior on the time for several runs
+    """
     t = default_timer()
-    running_function2("ldr_test.png")
+    running_fhdr_and_tonemap("ldr_test.png")
     t = default_timer() - t
     print(t)
     t = default_timer()
-    running_function2("ldr_test2.jpg")
+    running_fhdr_and_tonemap("ldr_test2.jpg")
     t = default_timer() - t
     print(t)
     t = default_timer()
-    running_function2("ldr_test2.jpg")
+    running_fhdr_and_tonemap("ldr_test2.jpg")
     t = default_timer() - t
     print(t)
     t = default_timer()
-    running_function2("ldr_test3.jpg")
+    running_fhdr_and_tonemap("ldr_test3.jpg")
     t = default_timer() - t
     print(t)

@@ -7,76 +7,147 @@ import pytest
 from itmo.fhdr.util import preprocess_hdr, preprocess_ldr, unpreprocess_hdr, unpreprocess_ldr
 import torch
 
+
+# This file is used for testing functions in the util.py file
+
+
 # test luminance
 def test_one_pixel_luminance():
+    """
+    testing on (1,1,3) dimension
+    testing luminance on one pixel manually and comparing the result with the implementation of our algorithm"""
     assert luminance(np.array([[[0.1,0.2,0.3]]])) == [[0.179]]
     assert luminance(np.array([[[0.2, 0.3, 0.4]]])) == [[0.279]]
 
 
 def test_four_pixel_luminance():
-    # testing on (2,2,3) dimension
+    """
+    testing on (2,2,3) dimension
+    testing luminance on four pixel manually and comparing the result with the implementation of our algorithm
+    """
     assert (luminance(np.array([[[0.1, 0.2, 0.3],[0.1, 0.2, 0.3]],[[0.1, 0.2, 0.3],[0.1, 0.2, 0.3]]])) == [[0.179, 0.179],[0.179, 0.179]]).all() == True
 
 
 # test loading image
 def test_load_existing_ldr_image():
-
+    """
+    testing for loading an existing ldr image and checking if all the values in the np array are between 0 and 1
+    in order to check if normalization is being done properly.
+    """
     ldr_img_path = "test_images/ldr_test.png"
     img =load_ldr_image(ldr_img_path)
     assert (0 <= img).all() and (img<= 1).all()
 
 
 
+
 def test_load_non_existing_ldr_image():
+    """
+    testing for loading a non-existing ldr image and checking if an exception is thrown.
+    """
 
     ldr_img_path = "test_images/ldr_tst.png"
-    try:
+    with pytest.raises(Exception):
         load_ldr_image(ldr_img_path)
-    except Exception as e:
-        assert str(e) == f"invalid path: {ldr_img_path}"
-
 
 def test_load_existing_hdr_image():
+    """
+    testing for loading an existing hdr image and checking if all the values in the np array are greater or equal to 0
+    """
     hdr_img_path = "test_images/hdr_test.hdr"
     img =load_hdr_image(hdr_img_path)
     assert (img>=0).all()
-    # assert os.path.isfile("../images/hdr_test.hdr") == True
 
 
 def test_load_non_existing_hdr_image():
-    hdr_img_path = "test_images/hdr_tst.hdr"
-    try:
-        load_hdr_image(hdr_img_path)
-    except Exception as e:
-        assert str(e) == f"invalid path: {hdr_img_path}"
+    """
+    testing for loading a non-existing hdr image and checking if an exception is thrown.
+    """
 
-def test_equal_save_image():
+    hdr_img_path = "test_images/hdr_tst.hdr"
+    with pytest.raises(Exception):
+        load_hdr_image(hdr_img_path)
+
+
+
+# test saving image
+def test_save_ldr_image():
+    """
+    Testing if the np array values of the original ldr image and saved copy of same image is the same. Assert statement should return True
+    """
+
+    img_path = "test_images/ldr_test.png"
+    frst_image = load_hdr_image(img_path)
+    save_hdr_image(frst_image,"test_images/test_save_ldr_image.png")
+    saved_img = load_hdr_image ("test_images/test_save_ldr_image.png")
+    assert (np.array(frst_image) == np.array(saved_img)).all()
+
+def test_save_ldr_image_to_invalid_location():
+    """
+    Testing if saving a ldr image to an invalid location throws an exception
+    """
+    img_path = "test_images/ldr_test2.jpg"
+    frst_image = load_hdr_image(img_path)
+    with pytest.raises(Exception):
+        save_img_destination_path = "tst_images/test2_save_ldr_image.jpg"
+        save_hdr_image(frst_image,save_img_destination_path)
+
+
+
+
+def test_unequal_save_ldr_image():
+    """
+    Testing if the np array values of the ldr original image and saved copy of a different image is the same.
+    The np array values for these two ldr images should be different.
+    :return:None
+    """
+
+    img_path = "test_images/ldr_test2.jpg"
+    frst_image = load_hdr_image(img_path)
+    save_hdr_image(frst_image,"test_images/test2_save_ldr_image.jpg")
+    saved_img = load_hdr_image ("test_images/test2_save_ldr_image.jpg")
+    unequal_img_path = "test_images/ldr_test.png"
+    unequal_img = load_hdr_image(unequal_img_path)
+    assert (np.array(unequal_img) != np.array(saved_img)).any()
+
+def test_save_hdr_image():
     """
     Testing if the np array values of the original image and saved copy of same image is the same. Assert statement should return True
     :return:None
     """
 
     img_path = "test_images/hdr_test.hdr"
-    frst_image = _load_image(img_path)
-    _save_image(frst_image,"test_images/test_save_function.hdr")
-    saved_img = _load_image ("test_images/test_save_function.hdr")
-    assert (np.array(frst_image) == np.array(saved_img)).all() ==True
+    frst_image = load_hdr_image(img_path)
+    save_hdr_image(frst_image,"test_images/test_save_hdr_image.hdr")
+    saved_img = load_hdr_image ("test_images/test_save_hdr_image.hdr")
+    assert (np.array(frst_image) == np.array(saved_img)).all()
 
-
-# test saving image
-def test_unequal_saved_image():
+def test_save_hdr_image_to_invalid_location():
     """
-    Testing if the np array values of the original image and saved copy of a different image is the same. Assert statement should return false
-    :return:None
+    Testing if saving a hdr image to an invalid location throws an exception
+    """
+    img_path = "test_images/hdr_test2.hdr"
+    frst_image = load_hdr_image(img_path)
+    with pytest.raises(Exception):
+        save_img_destination_path = "tst_images/test2_save_hdr_image.hdr"
+        save_hdr_image(frst_image,save_img_destination_path)
+
+
+
+
+def test_unequal_save_hdr_image():
+    """
+    Testing if the np array values of the original hdr image and saved copy of a different image is the same.
+    The np array values for these two images should be different.
     """
 
     img_path = "test_images/hdr_test2.hdr"
-    frst_image = _load_image(img_path)
-    _save_image(frst_image,"test_images/test2_save_function.hdr")
-    saved_img = _load_image ("test_images/test2_save_function.hdr")
+    frst_image = load_hdr_image(img_path)
+    save_hdr_image(frst_image,"test_images/test2_save_hdr_image.hdr")
+    saved_img = load_hdr_image ("test_images/test2_save_hdr_image.hdr")
     unequal_img_path = "test_images/hdr_test.hdr"
-    unequal_img = _load_image(unequal_img_path)
-    assert (np.array(unequal_img) == np.array(saved_img)).all() ==False
+    unequal_img = load_hdr_image(unequal_img_path)
+    assert (np.array(unequal_img) != np.array(saved_img)).any()
 
 def test_logmean():
     l = np.array([

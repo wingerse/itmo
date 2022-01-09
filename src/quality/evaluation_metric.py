@@ -31,7 +31,7 @@ def log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance):
     if (mse == 0):  # means that no noise present, logPSNR serves no importance here
         return 100
     Lmax = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
-    log_psnr_value = 10 * log10(log10(Lmax)/math.sqrt(mse))
+    log_psnr_value = 20 * log10(log10(Lmax)/math.sqrt(mse))
     return log_psnr_value
 
 
