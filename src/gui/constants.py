@@ -2,15 +2,19 @@
 Constants used in the user interface. This includes width, height or item tags.
 """
 
+SECOND_COLUMN_INDENT = 700
 BUTTON_HEIGHT = 40
 BUTTON_WIDTH = 100
 SELECT_BUTTON_WIDTH = 150
 LISTBOX_WIDTH = 150
+FILE_DIALOG_WIDTH = 450
+FILE_DIALOG_HEIGHT = 600
+PROGRESS_WIDTH = 400
+PROGRESS_HEIGHT = 10
 REINHARD = " Reinhard "
 DRAGO = " Drago "
 FHDR = " FHDR "
 LINEAR = " Linear "
-ITMO_CONTAINER = "itmo_container"
 LDR_CONTAINER = "ldr_container"
 GENERATED_CONTAINER = "generated_container"
 SELECT_LDR_DIALOG = "select_ldr_dialog"

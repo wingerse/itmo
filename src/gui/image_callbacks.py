@@ -27,7 +27,7 @@ def display_image(image, window, registry_tag, image_tag):
     """
     Helper function to display image.
     
-    :param image: numpy array that represents image to be displayed
+    :param image: Numpy array that represents image to be displayed
     :param window: Container that the image will be displayed in
     :param registry_tag: Alias for texture registry that should contain the new texture
     :param image_tag: Alias for the image that should be displayed 
@@ -55,7 +55,7 @@ def tone_map(image, tmo_technique):
     """
     Helper function to tone map HDR images to LDR for display.
     
-    :param image: numpy array of image to be tone mapped
+    :param image: Numpy array of image to be tone mapped
     :param tmo_technique: The technique chosen for tone mapping (Reinhard or Drago)
     :return: None if there is an error. A tone mapped image (in numpy array format) if successful
     """
@@ -75,7 +75,7 @@ def inverse_tone_map(image, itmo_technique):
     """
     Helper function to inversely tone map LDR images to HDR.
     
-    :param image: numpy array of image to be tone mapped
+    :param image: Numpy array of image to be tone mapped
     :param tmo_technique: The technique chosen for inverse tone mapping (FHDR or Linear)
     :return: None if there is an error. An inversely tone mapped image (in numpy array format) if successful
     """
@@ -91,6 +91,43 @@ def inverse_tone_map(image, itmo_technique):
     return image
 
 
+def convert_image(window, images):
+    """
+    Helper function for converting an LDR image to HDR.
+    
+    :param window: Container that the image will be displayed in
+    :param images: Object that holds the images and necessary information
+    """        
+    # disable save image button temporarily while converting
+    dpg.configure_item(SAVE_BUTTON, enabled=False)
+    
+    # show progress bar to generate image
+    dpg.configure_item(PROGRESS_GROUP, show=True)
+    dpg.set_value(PROGRESS_BAR, 0.3)
+    
+    # inverse tone mapping to convert the LDR image to HDR
+    try:
+        images.generated = inverse_tone_map(images.ldr, images.itmo)
+    except:
+        return
+        
+    dpg.set_value(PROGRESS_BAR, 0.7)
+    
+    # tone mapping for HDR display
+    try:
+        images.generated_ldr = tone_map(images.generated, images.tmo)
+    except:
+        return
+
+    # update progress bar and hide it
+    dpg.set_value(PROGRESS_BAR, 1.0)
+    dpg.configure_item(PROGRESS_GROUP, show=False)
+        
+    # display image and enable save button
+    display_image(images.generated_ldr, window, GENERATED_REGISTRY, GENERATED_IMAGE)
+    dpg.configure_item(SAVE_BUTTON, enabled=True)
+
+
 """ LISTBOX CALLBACKS """
 
 
@@ -101,6 +138,10 @@ def change_tmo_display(sender, app_data, user_data):
     tmo_technique = app_data
     images = user_data
     
+    # show progress bar to generate image
+    dpg.configure_item(PROGRESS_GROUP, show=True)
+    dpg.set_value(PROGRESS_BAR, 0.3)
+    
     # update display tmo technique in Images object
     if images.tmo != tmo_technique:
         images.tmo = tmo_technique
@@ -110,16 +151,19 @@ def change_tmo_display(sender, app_data, user_data):
             try:
                 tone_mapped_image = tone_map(images.generated, tmo_technique)
             except:
+                # update progress bar and hide it
+                dpg.set_value(PROGRESS_BAR, 1.0)
+                dpg.configure_item(PROGRESS_GROUP, show=False)
                 return
             
-            display_image(tone_mapped_image, GENERATED_CONTAINER, GENERATED_REGISTRY, GENERATED_IMAGE)
+            dpg.set_value(PROGRESS_BAR, 0.7)
             
+            display_image(tone_mapped_image, GENERATED_CONTAINER, GENERATED_REGISTRY, GENERATED_IMAGE)
             images.generated_ldr = tone_mapped_image
-        else:
-            return
-        
-    else:
-        return
+            
+    # update progress bar and hide it
+    dpg.set_value(PROGRESS_BAR, 1.0)
+    dpg.configure_item(PROGRESS_GROUP, show=False)
     
 
 def select_itmo(sender, app_data, user_data):
@@ -127,10 +171,17 @@ def select_itmo(sender, app_data, user_data):
     Callback for selecting an itmo technique (FHDR or Linear).
     """
     itmo_technique = app_data
-    images = user_data
+    window = user_data[0]
+    images = user_data[1]
     
     # update itmo in Images object
-    images.itmo = itmo_technique
+    if images.itmo != itmo_technique:
+        images.itmo = itmo_technique
+        
+        # redisplay image if it already exists
+        if dpg.does_alias_exist(GENERATED_IMAGE):
+            convert_image(window, images)
+
     
 
 """ BUTTON CALLBACKS """
@@ -157,69 +208,20 @@ def select_ldr(sender, app_data, user_data):
     display_image(images.ldr, window, LDR_REGISTRY, ORIGINAL_LDR_IMAGE)
     dpg.configure_item(GENERATE_BUTTON, enabled=True)
     
- 
+    
 def generate(sender, app_data, user_data):
     """
-    Callback for when 'Generate' button is clicked.
+    Callback for when the 'Generate' button is clicked.
     """    
-    dpg.configure_item(ITMO_CONTAINER, show=True)
-    if dpg.does_alias_exist(GENERATED_IMAGE):
-        dpg.configure_item(GENERATED_IMAGE, show=False)
-        
-
-def cancel(sender, app_data, user_data):
-    """
-    Callback for when conversion is cancelled.
-    """    
-    dpg.configure_item(ITMO_CONTAINER, show=False)
-    if dpg.does_alias_exist(GENERATED_IMAGE):
-        dpg.configure_item(GENERATED_IMAGE, show=True)
-    
-    
-def convert_image(sender, app_data, user_data):
-    """
-    Callback for converting an LDR to HDR image.
-    """
-    # hide itmo container
-    dpg.configure_item(ITMO_CONTAINER, show=False)
-    
     # delete current generated image if it exists
     if dpg.does_alias_exist(GENERATED_IMAGE):
         dpg.delete_item(GENERATED_IMAGE)
         dpg.delete_item(GENERATED_REGISTRY)
-    
-    # disable save image button temporarily while converting
-    dpg.configure_item(SAVE_BUTTON, enabled=False)
-    
-    # show progress bar to generate image
-    dpg.configure_item(PROGRESS_GROUP, show=True)
-    dpg.set_value(PROGRESS_BAR, 0.0)
-    
+        
     window = user_data[0]
     images = user_data[1]
     
-    dpg.set_value(PROGRESS_BAR, 0.3)
-    
-    # inverse tone mapping to convert the LDR image to HDR using the FHDR model
-    try:
-        images.generated = inverse_tone_map(images.ldr, images.itmo)
-    except:
-        return
-        
-    dpg.set_value(PROGRESS_BAR, 0.6)
-    
-    try:
-        images.generated_ldr = tone_map(images.generated, images.tmo)
-    except:
-        return
-
-    # update progress bar and hide it
-    dpg.set_value(PROGRESS_BAR, 1.0)
-    dpg.configure_item(PROGRESS_GROUP, show=False)
-        
-    # display image and enable save button
-    display_image(images.generated_ldr, window, GENERATED_REGISTRY, GENERATED_IMAGE)
-    dpg.configure_item(SAVE_BUTTON, enabled=True)
+    convert_image(window, images)
     
     
 def save_image(sender, app_data, user_data):
