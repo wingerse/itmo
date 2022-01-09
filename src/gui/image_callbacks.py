@@ -7,7 +7,9 @@ import numpy as np
 from .constants import *
 from util import *
 from tmo import reinhard, drago
-from itmo import fhdr
+from itmo import fhdr, linear
+
+""" HELPER FUNCTIONS """
 
 def display_error(error, message):
     """
@@ -16,7 +18,6 @@ def display_error(error, message):
     :param error: The error caught
     :param message: String to be displayed in the error modal
     """
-    
     dpg.configure_item(ERROR_MESSAGE, default_value=message)
     dpg.configure_item(ERROR_MODAL, show=True)
     print("Error:", error)
@@ -31,7 +32,6 @@ def display_image(image, window, registry_tag, image_tag):
     :param registry_tag: Alias for texture registry that should contain the new texture
     :param image_tag: Alias for the image that should be displayed 
     """
-    
     height = image.shape[0]
     width = image.shape[1]
         
@@ -57,12 +57,11 @@ def tone_map(image, tmo_technique):
     
     :param image: numpy array of image to be tone mapped
     :param tmo_technique: The technique chosen for tone mapping (Reinhard or Drago)
-    :return: None if there is an error and tone mapped image (in numpy array format) if successful
+    :return: None if there is an error. A tone mapped image (in numpy array format) if successful
     """
-    
     try:
         if tmo_technique == REINHARD:
-            image =  reinhard(image)
+            image = reinhard(image)
         else:
             image = drago(image)
     except Exception as e:
@@ -70,13 +69,77 @@ def tone_map(image, tmo_technique):
         return
     
     return image
+
+
+def inverse_tone_map(image, itmo_technique):
+    """
+    Helper function to inversely tone map LDR images to HDR.
+    
+    :param image: numpy array of image to be tone mapped
+    :param tmo_technique: The technique chosen for inverse tone mapping (FHDR or Linear)
+    :return: None if there is an error. An inversely tone mapped image (in numpy array format) if successful
+    """
+    try:
+        if itmo_technique == FHDR:
+            image = fhdr(image, "src/itmo/fhdr/checkpoints/ours.ckpt")
+        else:
+            image = linear(image)
+    except Exception as e:
+        display_error(e, "There was a problem converting the image.")
+        return
+    
+    return image
+
+
+""" LISTBOX CALLBACKS """
+
+
+def change_tmo_display(sender, app_data, user_data):
+    """
+    Callback when tone mapping operator used to display HDR images is changed (Reinhard or Drago).
+    """
+    tmo_technique = app_data
+    images = user_data
+    
+    # update display tmo technique in Images object
+    if images.tmo != tmo_technique:
+        images.tmo = tmo_technique
+        
+        # redisplay image if it already exists
+        if dpg.does_alias_exist(GENERATED_IMAGE):
+            try:
+                tone_mapped_image = tone_map(images.generated, tmo_technique)
+            except:
+                return
+            
+            display_image(tone_mapped_image, GENERATED_CONTAINER, GENERATED_REGISTRY, GENERATED_IMAGE)
+            
+            images.generated_ldr = tone_mapped_image
+        else:
+            return
+        
+    else:
+        return
     
 
+def select_itmo(sender, app_data, user_data):
+    """
+    Callback for selecting an itmo technique (FHDR or Linear).
+    """
+    itmo_technique = app_data
+    images = user_data
+    
+    # update itmo in Images object
+    images.itmo = itmo_technique
+    
+
+""" BUTTON CALLBACKS """
+    
+    
 def select_ldr(sender, app_data, user_data):
     """
     Callback for opening and loading an LDR image file.
     """
-    
     file_name = app_data['file_name']
     image_path = app_data['file_path_name']
     window = user_data[0]
@@ -94,35 +157,32 @@ def select_ldr(sender, app_data, user_data):
     display_image(images.ldr, window, LDR_REGISTRY, ORIGINAL_LDR_IMAGE)
     dpg.configure_item(GENERATE_BUTTON, enabled=True)
     
-
-def save_image(sender, app_data, user_data):
+ 
+def generate(sender, app_data, user_data):
     """
-    Callback for saving image.
-    """
-    
-    images = user_data
-
-    # prepare file path names for both HDR and LDR
-    file_path_name = app_data['file_path_name']
-    hdr_name = file_path_name + ".hdr"
-    ldr_name = file_path_name + ".png"
+    Callback for when 'Generate' button is clicked.
+    """    
+    dpg.configure_item(ITMO_CONTAINER, show=True)
+    if dpg.does_alias_exist(GENERATED_IMAGE):
+        dpg.configure_item(GENERATED_IMAGE, show=False)
         
-    # save both HDR and LDR images
-    try:
-        save_hdr_image(images.generated, hdr_name)
-        save_ldr_image(images.generated_ldr, ldr_name)
-    except Exception as e:
-        display_error(e, "There was a problem saving the images.")
-        return
-    
-    # show save modal
-    dpg.configure_item(SAVE_MODAL, show=True)
+
+def cancel(sender, app_data, user_data):
+    """
+    Callback for when conversion is cancelled.
+    """    
+    dpg.configure_item(ITMO_CONTAINER, show=False)
+    if dpg.does_alias_exist(GENERATED_IMAGE):
+        dpg.configure_item(GENERATED_IMAGE, show=True)
     
     
 def convert_image(sender, app_data, user_data):
     """
-    Using FHDR model to convert LDR image to HDR image.
+    Callback for converting an LDR to HDR image.
     """
+    # hide itmo container
+    dpg.configure_item(ITMO_CONTAINER, show=False)
+    
     # delete current generated image if it exists
     if dpg.does_alias_exist(GENERATED_IMAGE):
         dpg.delete_item(GENERATED_IMAGE)
@@ -142,14 +202,16 @@ def convert_image(sender, app_data, user_data):
     
     # inverse tone mapping to convert the LDR image to HDR using the FHDR model
     try:
-        images.generated = fhdr(images.ldr, "src/itmo/fhdr/checkpoints/ours.ckpt")
-    except Exception as e:
-        display_error(e, "There was a problem generating the image.")
+        images.generated = inverse_tone_map(images.ldr, images.itmo)
+    except:
         return
         
     dpg.set_value(PROGRESS_BAR, 0.6)
     
-    images.generated_ldr = tone_map(images.generated, images.tmo)
+    try:
+        images.generated_ldr = tone_map(images.generated, images.tmo)
+    except:
+        return
 
     # update progress bar and hide it
     dpg.set_value(PROGRESS_BAR, 1.0)
@@ -160,27 +222,24 @@ def convert_image(sender, app_data, user_data):
     dpg.configure_item(SAVE_BUTTON, enabled=True)
     
     
-def change_tmo_display(sender, app_data, user_data):
+def save_image(sender, app_data, user_data):
     """
-    Callback when tone mapping operator used to display HDR images is changed (Reinhard or Drago).
+    Callback for saving the generated image.
     """
-        
-    tmo_technique = app_data
     images = user_data
-    
-    # update display tmo technique in Images object
-    if images.tmo != tmo_technique:
-        images.tmo = tmo_technique
-        
-        # redisplay image if it already exists
-        if dpg.does_alias_exist(GENERATED_IMAGE):
-            tone_mapped_image = tone_map(images.generated, tmo_technique)
-            display_image(tone_mapped_image, GENERATED_CONTAINER, GENERATED_REGISTRY, GENERATED_IMAGE)
-            
-            images.generated_ldr = tone_mapped_image
-        else:
-            return
-        
-    else:
-        return
 
+    # prepare file path names for both HDR and LDR
+    file_path_name = app_data['file_path_name']
+    hdr_name = file_path_name + ".hdr"
+    ldr_name = file_path_name + ".png"
+        
+    # save both HDR and LDR images
+    try:
+        save_hdr_image(images.generated, hdr_name)
+        save_ldr_image(images.generated_ldr, ldr_name)
+    except Exception as e:
+        display_error(e, "There was a problem saving the images.")
+        return
+    
+    # show save modal
+    dpg.configure_item(SAVE_MODAL, show=True)

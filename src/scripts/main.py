@@ -9,15 +9,17 @@ class Images:
     Object to hold images and necessary info to be passed around in UI functions
     """
     def __init__(self):
+        self.tmo = REINHARD
+        self.itmo = FHDR
         self.ldr = None
         self.generated = None
         self.generated_ldr = None
-        self.tmo = REINHARD
 
 if __name__ == '__main__':
     
     images = Images()
     tmo_items = [REINHARD, DRAGO]
+    itmo_items = [FHDR, LINEAR]
     
     dpg.create_context()
     dpg.create_viewport(title="LDR to HDR Converter", width=1500, height= 750, x_pos=0, y_pos=0)
@@ -47,8 +49,10 @@ if __name__ == '__main__':
         dpg.add_spacer(height=10)
         
         instructions = dpg.add_text("Welcome to our LDR to HDR Image Converter!\n"
-                                    "Start by selecting an LDR image file and choosing a tone mapping operator.\n" 
-                                    "Once you are ready, simply click the 'Generate' button to start the conversion.\n"
+                                    "Start by choosing a tone mapping operator. Don't worry, you can change this at any time.\n"
+                                    "Then, select an LDR image file. Only one file can be selected but you may reselect as many times as needed.\n" 
+                                    "Once you are ready, simply click the 'Generate' button.\n"
+                                    "Choose one of the inverse tone mapping techniques and click 'Start' to begin the conversion.\n"
                                     "You can then save the generated image by clicking the 'Save Image' button and the image will be saved in both .hdr and .png formats.")
         
         dpg.add_spacer(height=10)
@@ -77,15 +81,25 @@ if __name__ == '__main__':
                 generated_title = dpg.add_text("Generated Image")
                 
                 with dpg.group(horizontal=True):
-                    dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=BUTTON_WIDTH, height=BUTTON_HEIGHT, enabled=False, callback=convert_image, user_data=(GENERATED_CONTAINER, images))   
+                    dpg.add_button(label="Generate", tag=GENERATE_BUTTON, width=BUTTON_WIDTH, height=BUTTON_HEIGHT, enabled=False, callback=generate)   
                     dpg.add_button(label="Save Image", tag=SAVE_BUTTON, width=BUTTON_WIDTH, height=BUTTON_HEIGHT, enabled=False, callback=lambda: dpg.show_item("save_file_dialog"))
                 
                 dpg.add_spacer(height=10)
+                
+                with dpg.group(show=False, tag=ITMO_CONTAINER):
+                    itmo_title = dpg.add_text("Inverse Tone Mapping Operator")
+                    itmo_info = dpg.add_text("See how our FHDR model compares to a linear technique!\n"
+                                             "Select a technique from below to choose the method of conversion.")
+                    dpg.add_spacer(height=10)
+                    with dpg.group(horizontal=True):
+                        itmo_listbox = dpg.add_listbox(items=itmo_items, num_items=2, width=LISTBOX_WIDTH, callback=select_itmo, user_data=(images))
+                        dpg.add_button(label="Start", width=BUTTON_WIDTH, height=BUTTON_HEIGHT, callback=convert_image, user_data=(GENERATED_CONTAINER, images))   
+                        dpg.add_button(label="Cancel", width=BUTTON_WIDTH, height=BUTTON_HEIGHT, callback=cancel)   
                     
                 with dpg.group(show=False, tag=PROGRESS_GROUP):
                     loading = dpg.add_text("Loading...")
                     dpg.add_spacer(height=5)
-                    dpg.add_progress_bar(tag=PROGRESS_BAR)    
+                    dpg.add_progress_bar(tag=PROGRESS_BAR)
                 
     # file dialog for selecting an LDR image file
     with dpg.file_dialog(directory_selector=False, show=False, callback=select_ldr, id=SELECT_LDR_DIALOG, user_data=(LDR_CONTAINER, images)):
@@ -113,6 +127,9 @@ if __name__ == '__main__':
     dpg.bind_item_font(tmo_title, h2)
     dpg.bind_item_font(tmo_info, normal_text)
     dpg.bind_item_font(tmo_listbox, h2)
+    dpg.bind_item_font(itmo_title, h2)
+    dpg.bind_item_font(itmo_info, normal_text)
+    dpg.bind_item_font(itmo_listbox, h2)
     dpg.bind_item_font(ldr_title, h1)
     dpg.bind_item_font(generated_title, h1)
     dpg.bind_item_font(loading, normal_text)
