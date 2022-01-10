@@ -3,6 +3,9 @@ import os
 
 eng = matlab.engine.connect_matlab()
 
+os.chdir('../hdrvdp')
+eng.cd(os.getcwd())
+
 folders = ['gt_hdr', 'hdr', 'ldr']
 
 # Replace with your root directory
