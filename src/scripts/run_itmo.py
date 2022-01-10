@@ -27,11 +27,15 @@ p.add_argument("hdr_path", help="Path of output HDR image")
 
 args = p.parse_args()
 
+
+# selecting the itmo
 if args.itmo == "linear":
   itmo_func = linear
 else:
   itmo_func = fhdr
 
+
+# selecting tmo
 if args.tmo == "reinhard":
   tmo_func = reinhard
 else:

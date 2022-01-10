@@ -1,15 +1,16 @@
 import include_parent_path
 from tmo.util import logmean
-from util import load_hdr_image
+import numpy as np
 
 def test_logmean():
-    directory = "../../test_images/143.hdr"
-    hdr = load_hdr_image(directory)
-    one_pixel_1 = hdr[0][0]
-    one_pixel_2 = hdr[0][1]
+    one_pixel = np.array([[[1.0, 1.3, 2.0]]])
+    two_pixel = np.array([[[1.0, 1.3, 2.0], [1.0, 2.0, 2.5]]])
+    three_pixel = np.array([[[1.0, 1.3, 2.0], [2.0, 2.1, 2.5],[1.0, 2.0, 2.5]]])
 
-    result_1 = int(logmean(one_pixel_1) * 10000)
-    result_2 = int(logmean(one_pixel_2) * 10000)
+    result_1 = int(logmean(one_pixel) * 10000)
+    result_2 = int(logmean(two_pixel) * 10000)
+    result_3 = int(logmean(three_pixel) * 10000)
 
-    assert result_1 == 16142
-    assert result_2 == 14311
+    assert result_1 == 13750
+    assert result_2 == 15334
+    assert result_3 == 17267

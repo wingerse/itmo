@@ -26,19 +26,19 @@ p.add_argument("gt_path", help="HDR ground truth image path")
 
 args = p.parse_args()
 
-ldr = load_ldr_image(args.ldr_path)
-gt = load_hdr_image(args.gt_path)
-gt_tmo = reinhard(gt)
+ldr = load_ldr_image(args.ldr_path)        # loading ldr image
+gt = load_hdr_image(args.gt_path)          #loading ground truth image
+gt_tmo = reinhard(gt)                      # tonmap ground truth hdr image using reinhard tmo
 
-hdr_linear = linear(ldr)
-hdr_linear_tmo = reinhard(hdr_linear)
-hdr_fhdr = fhdr(ldr)
-hdr_fhdr_tmo = reinhard(hdr_fhdr)
+hdr_linear = linear(ldr)                    # applying linear itmo to ldr image
+hdr_linear_tmo = reinhard(hdr_linear)       # tonmap generated linear itmo hdr image   
+hdr_fhdr = fhdr(ldr)                        # applying fhdr itmo to ldr image
+hdr_fhdr_tmo = reinhard(hdr_fhdr)           # tonmap generated linear itmo hdr image 
 
 print("Metric scores for Linear itmo")
 
 log_psnr_linear = metrics.log_psnr(hdr_linear, gt)
-print(f"log PSNR value is {log_psnr_linear} dB")     #log psnr between  linear itmo image and reference image
+print(f"log PSNR value is {log_psnr_linear} dB")     
 ssim_linear = metrics.ssim(hdr_linear, gt)
 print(f"SSIM value is {ssim_linear}")
 psnr_linear = metrics.psnr(gt_tmo, hdr_linear_tmo)
@@ -48,7 +48,7 @@ print("------------")
 print("Metric scores for fhdr itmo")
 
 log_psnr_fhdr = metrics.log_psnr(hdr_fhdr, gt)
-print(f"log PSNR value is {log_psnr_fhdr} dB")     #log psnr between  linear itmo image and reference image
+print(f"log PSNR value is {log_psnr_fhdr} dB")     
 ssim_fhdr = metrics.ssim(hdr_fhdr, gt)
 print(f"SSIM value is {ssim_fhdr}")
 psnr_fhdr = metrics.psnr(gt_tmo, hdr_fhdr_tmo)

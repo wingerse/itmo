@@ -2,6 +2,7 @@
 ## Setup
     - Install [miniconda](https://docs.conda.io/en/latest/miniconda.html)
     - `conda env create -f environment.yml` (may need to do this via conda terminal)
+    - `conda activate fyp`
     - `pip install dearpygui`
     - Before running any python files: `conda activate fyp`
 
