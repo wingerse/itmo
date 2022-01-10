@@ -3,7 +3,7 @@ usage: q_score.py {directory}
 
 Script to calculate Q-Score
 """
-
+import include_parent_path
 import matlab.engine
 import os
 import sys
@@ -14,7 +14,7 @@ directory = sys.argv[1]
 eng = matlab.engine.connect_matlab()
 
 # Changing working directory
-os.chdir('../hdrvdp')
+os.chdir('src/hdrvdp')
 eng.cd(os.getcwd())
 
 # List of folders for comparison
