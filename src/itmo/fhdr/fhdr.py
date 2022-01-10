@@ -2,7 +2,7 @@ from .model import FHDR
 import torch
 from .util import preprocess_ldr, unpreprocess_hdr
 
-def fhdr(ldr, ckpt_path, iteration_count=1):
+def fhdr(ldr, ckpt_path="src/itmo/fhdr/checkpoints/ours.ckpt", iteration_count=1):
     """
     Run the FHDR model on a given ldr image. 
 

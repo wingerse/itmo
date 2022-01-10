@@ -87,7 +87,7 @@ def inverse_tone_map(image, itmo_technique):
     """
     try:
         if itmo_technique == FHDR:
-            image = fhdr(image, "src/itmo/fhdr/checkpoints/ours.ckpt")
+            image = fhdr(image)
         else:
             image = linear(image)
     except Exception as e:

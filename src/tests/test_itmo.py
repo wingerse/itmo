@@ -22,7 +22,7 @@ def test_linear_itmo():
 def _test_fhdr(img_number):
     ldr = load_ldr_image(f"datasets/testing_data_ours/ldr/{img_number}.jpg")
     gt = load_hdr_image(f"datasets/testing_data_ours/hdr/{img_number}.hdr")
-    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")
+    hdr = fhdr(ldr)
     hdr_linear = linear(ldr)
 
     gt_t = mu_tonemap(gt)
@@ -67,7 +67,7 @@ def test_fhdr_10_images():
 
 def test_fhdr_works_on_all_black():
     ldr = load_ldr_image("test_images/black.png")
-    hdr = fhdr(ldr, "src/itmo/fhdr/checkpoints/ours.ckpt")
+    hdr = fhdr(ldr)
 
     save_ldr_image(drago(hdr), "test_outputs/black_hdr.jpg")
 
@@ -76,7 +76,7 @@ def test_fhdr_works_on_all_black():
 
 def test_fhdr_works_on_all_white():
     ldr = load_ldr_image("test_images/white.png")
-    hdr = fhdr(ldr, "src/itmo/fhdr/checkpoints/ours.ckpt")
+    hdr = fhdr(ldr)
 
     save_ldr_image(drago(hdr), "test_outputs/white_hdr.jpg")
 

@@ -24,7 +24,7 @@ def running_whole_algorithm_together():
 
     ldr = load_ldr_image("test_images/ldr_test.png")
 
-    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")    # applying fhdr itmo with latest checkpoint
+    hdr = fhdr(ldr)    # applying fhdr itmo with latest checkpoint
     save_hdr_image(hdr, "test_outputs/fhdr.hdr")
 
     hdr_t = reinhard(hdr)
@@ -53,7 +53,7 @@ def running_fhdr_and_tonemap(filename):
     :param filename: ldr image to do the fhdr transformation on
     """
     ldr = load_ldr_image("test_images/" + filename)
-    hdr = fhdr(ldr, f"src/itmo/fhdr/checkpoints/ours.ckpt")
+    hdr = fhdr(ldr)
     save_ldr_image(drago(hdr), "test_outputs/" + filename)
 
 
