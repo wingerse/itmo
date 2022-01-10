@@ -77,7 +77,7 @@ if __name__ == '__main__':
                                          "Select a technique from below to choose a method of conversion\n"
                                          "for the generated image.")
                 dpg.add_spacer(height=10)
-                itmo_listbox = dpg.add_listbox(items=itmo_items, num_items=2, width=LISTBOX_WIDTH, callback=select_itmo, user_data=(GENERATED_CONTAINER, images))
+                itmo_listbox = dpg.add_listbox(items=itmo_items, num_items=2, width=LISTBOX_WIDTH, callback=change_itmo, user_data=(GENERATED_CONTAINER, images))
                     
         dpg.add_spacer(height=30)
         

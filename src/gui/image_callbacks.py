@@ -57,7 +57,7 @@ def tone_map(image, tmo_technique):
     
     :param image: Numpy array of image to be tone mapped
     :param tmo_technique: The technique chosen for tone mapping (Reinhard or Drago)
-    :return: None if there is an error. A tone mapped image (in numpy array format) if successful
+    :return: A tone mapped image (in numpy array format) if successful, else raise exception
     """
     try:
         if tmo_technique == REINHARD:
@@ -67,7 +67,6 @@ def tone_map(image, tmo_technique):
     except Exception as e:
         display_error(e, "There was a problem displaying the image.")
         raise Exception(e)
-        return
     
     return image
 
@@ -78,7 +77,7 @@ def inverse_tone_map(image, itmo_technique):
     
     :param image: Numpy array of image to be tone mapped
     :param tmo_technique: The technique chosen for inverse tone mapping (FHDR or Linear)
-    :return: None if there is an error. An inversely tone mapped image (in numpy array format) if successful
+    :return: An inversely tone mapped image (in numpy array format) if successful, else raise exception
     """
     try:
         if itmo_technique == FHDR:
@@ -88,7 +87,6 @@ def inverse_tone_map(image, itmo_technique):
     except Exception as e:
         display_error(e, "There was a problem converting the image.")
         raise Exception(e)
-        return
     
     return image
 
@@ -110,16 +108,16 @@ def convert_image(window, images):
     # inverse tone mapping to convert the LDR image to HDR
     try:
         images.generated = inverse_tone_map(images.ldr, images.itmo)
-    except:
-        return
+    except Exception as e:
+        raise Exception(e)
         
     dpg.set_value(PROGRESS_BAR, 0.7)
     
     # tone mapping for HDR display
     try:
         images.generated_ldr = tone_map(images.generated, images.tmo)
-    except:
-        return
+    except Exception as e:
+        raise Exception(e)
 
     # update progress bar and hide it
     dpg.set_value(PROGRESS_BAR, 1.0)
@@ -165,7 +163,7 @@ def change_tmo_display(sender, app_data, user_data):
     dpg.configure_item(PROGRESS_GROUP, show=False)
     
 
-def select_itmo(sender, app_data, user_data):
+def change_itmo(sender, app_data, user_data):
     """
     Callback for selecting an itmo technique (FHDR or Linear).
     """
@@ -179,9 +177,12 @@ def select_itmo(sender, app_data, user_data):
         
         # redisplay image if it already exists
         if dpg.does_alias_exist(GENERATED_IMAGE):
-            convert_image(window, images)
-
-    
+            try:
+                convert_image(window, images)
+            except:
+                dpg.delete_item(GENERATED_IMAGE)
+                dpg.delete_item(GENERATED_REGISTRY)
+ 
 
 """ BUTTON CALLBACKS """
     
@@ -211,16 +212,14 @@ def select_ldr(sender, app_data, user_data):
 def generate(sender, app_data, user_data):
     """
     Callback for when the 'Generate' button is clicked.
-    """    
-    # delete current generated image if it exists
-    if dpg.does_alias_exist(GENERATED_IMAGE):
-        dpg.delete_item(GENERATED_IMAGE)
-        dpg.delete_item(GENERATED_REGISTRY)
-        
+    """          
     window = user_data[0]
     images = user_data[1]
     
-    convert_image(window, images)
+    try:
+        convert_image(window, images)
+    except:
+        return
     
     
 def save_image(sender, app_data, user_data):

@@ -1,5 +1,5 @@
 """
-Constants used in the user interface. This includes width, height or item tags.
+Constants used in the user interface. This includes width, height or tags of items.
 """
 
 SECOND_COLUMN_INDENT = 700
