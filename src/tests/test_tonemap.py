@@ -1,10 +1,6 @@
 import include_parent_path
-from tmo import reinhard, drago
+from tmo import reinhard, drago, mu_tonemap
 from util import load_hdr_image, save_ldr_image
-from itmo.fhdr.util import mu_tonemap
-from tmo.drago import drago
-from tmo.reinhard import reinhard
-import torch
 
 def test_tonemap():
     hdr = load_hdr_image("datasets/aug_dataset/hdr/100.hdr")
@@ -20,7 +16,7 @@ def test_mu_tonemap():
     hdr = load_hdr_image(directory)
 
     img = hdr[0][0]
-    hdr_t = mu_tonemap(torch.from_numpy(img))
+    hdr_t = mu_tonemap(img)
 
     res = [10315, 10333, 10294]
 
@@ -50,4 +46,4 @@ def test_reinhard():
     res = [9892, 10000, 9760]
 
     for i in range(len(ldr)):
-        assert int(ldr[i] * 10000) == res [i]
+        assert int(ldr[i] * 10000) == res[i]
