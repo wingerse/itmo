@@ -64,7 +64,9 @@ class FeedbackBlock(nn.Module):
             self.last_hidden.copy_(x)
             self.should_reset = False
 
+        # hidden layer is concatenated with input, doubling its size, i.e. 128
         out = torch.cat((x, self.last_hidden), dim=1)
+        # it is then compressed back to 64
         out = self.compress_in(out)
 
         out = self.DRDB1(out)
@@ -85,9 +87,12 @@ class DilatedResidualDenseBlock(nn.Module):
         nChannels_ = 64
         modules = []
 
+        # since each layer is connected to layers after it, the channel size grows 
         for i in range(nDenselayer):
             modules.append(make_dense(nChannels_, growthRate))
             nChannels_ += growthRate
+        # then each layer is fed sequentially. Dense connections is achieved by concatenating input of each layer
+        # with output of it.
         self.dense_layers = nn.Sequential(*modules)
         self.should_reset = True
 
@@ -100,8 +105,10 @@ class DilatedResidualDenseBlock(nn.Module):
             self.last_hidden.copy_(x)
             self.should_reset = False
 
+        # hidden layer is concatenated with input doubling its size, i.e. 128
         out = torch.cat((x, self.last_hidden), dim=1)
 
+        # it is then compressed to 64
         out = self.compress(out)
         out = self.dense_layers(out)
         out = self.conv_1x1(out)
@@ -126,5 +133,7 @@ class make_dense(nn.Module):
 
     def forward(self, x):
         out = F.relu(self.conv(x))
+        # output of each layer is its input concat with output, this allows later layers to consume the 
+        # output of this layer as well previous layers.
         out = torch.cat((x, out), 1)
         return out
