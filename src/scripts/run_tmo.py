@@ -24,6 +24,7 @@ p.add_argument("ldr_path", help="Path of output LDR image")
 
 args = p.parse_args()
 
+#selection the tmo operator to be used by user
 if args.tmo == "reinhard":
   tmo_func = reinhard
 else:

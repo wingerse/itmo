@@ -1,3 +1,7 @@
+"""
+This file is used to calculate the quality assurance metrics such as PSNR, logPSNR and SSIM.
+"""
+
 import math
 from math import log10
 import numpy as np
@@ -9,9 +13,12 @@ def log_psnr(img_a, img_b):
     """
     :param img_a: An HDR image
     :param img_b: HDR image to compare with img_a
-    :return: logPSNR value denoting the quality of the test image compared to the reference image. The higher the logPSNR value,
-             the closer is the test Image to the ground truth.
-    Note: The formula for logPSNR was taken from Kai Linn's thesis chapter 2 page 34
+    :return: logPSNR value denoting the quality of img_a compared to img_b. The higher the logPSNR value,
+             the closer is img_a to img_b.
+    Note: The formula for logPSNR was taken from Kai Linn's thesis chapter 2 page 34 with reference to this paper:
+        Mukherjee, R., Debattista, K., Bashford-Rogers, T., Vangorp, P., Mantiuk, R., Bessa, M., Waterfield, B., & Chalmers, A. (2016). 
+        Objective and subjective evaluation of High Dynamic Range video compression. Signal Processing: Image Communication, 47, 426–437. 
+        https://doi.org/10.1016/j.image.2016.08.001
     """
 
     img_a_l = luminance(img_a)
@@ -43,13 +50,11 @@ def ssim(test_image, reference_image):
 
 def psnr(img_a, img_b):
     """
+    :param img_a: An HDR image
+    :param img_b: HDR image to compare with img_a
+    :return:peak singnal-to-noise ratio(psnr) value denoting the quality of img_a compared to img_b. The higher the psnr value,
+             the closer is img_a to img_b.
     code adapted from https://github.com/jackfrued/Python-1/blob/master/analysis/compression_analysis/psnr.py
-
-    This function computes the peak singnal-to-noise ratio of the tonemapped generated image and that of the tonemapped ground truth image.
-    Used to measure the quality of the generated image compared to the ground truth. The higher the value, the better is the measurement.
-    :param testImageTonemapped:ldr format after tonemapping  the generated hdr image
-    :param referenceImageTonemapped: ldr format after tonemapping  the ground truth hdr image
-    :return: the PSNR value
     """
 
     mse = np.mean((img_a - img_b) ** 2)
