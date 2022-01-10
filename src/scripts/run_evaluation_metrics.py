@@ -1,56 +1,55 @@
-# This file is used to calculate the PSNR, LogPSNR, SSIM scores for an LDR image that has gone through linear itmo and fhdr itmo
+"""
+usage: run_evaluation_metrics.py [-h] ldr_path gt_path
 
+Calculate the PSNR, LogPSNR, SSIM scores for an LDR image that has gone through linear itmo and fhdr itmo
 
-import os, sys
-sys.path.insert(1, os.path.join(sys.path[0], "../"))
-from util import change_luminance, luminance, save_hdr_image, save_ldr_image, load_ldr_image, load_hdr_image, remove_gamma, apply_gamma,_save_image,_load_image
+positional arguments:
+  ldr_path    LDR image path
+  gt_path     HDR ground truth image path
+
+optional arguments:
+  -h, --help  show this help message and exit
+"""
+
+import include_parent_path
+from itmo.fhdr.fhdr import fhdr
+from itmo.linear import linear
+from tmo.reinhard import reinhard
+from util import load_ldr_image, load_hdr_image
 from quality import metrics
+import argparse
 
+p = argparse.ArgumentParser(description="Calculate the PSNR, LogPSNR, SSIM scores for an LDR image that has gone through\
+ linear itmo and fhdr itmo")
+p.add_argument("ldr_path", help="LDR image path")
+p.add_argument("gt_path", help="HDR ground truth image path")
 
+args = p.parse_args()
 
-def main():
-    """
-    running the evaluation metric file
-    :return: None
-    """
-    print("Metric scores for Linear itmo")
-    reference_image_hdr = load_hdr_image('test_images/gt_hdr.hdr')        # reference hdr file
-    reference_image_hdr_luminance = luminance(reference_image_hdr)         # luminance for refrence hdr file
-    reference_image_tonemapped = load_ldr_image('test_images/gt_tmo.jpg')      # tone mapped reference image
+ldr = load_ldr_image(args.ldr_path)
+gt = load_hdr_image(args.gt_path)
+gt_tmo = reinhard(gt)
 
+hdr_linear = linear(ldr)
+hdr_linear_tmo = reinhard(hdr_linear)
+hdr_fhdr = fhdr(ldr)
+hdr_fhdr_tmo = reinhard(hdr_fhdr)
 
-    test_image_linear_hdr = load_hdr_image("test_images/generated_linear_itmo.hdr")      # generated linear itmo hdr file
-    test_image_linear_luminance = luminance(test_image_linear_hdr)
+print("Metric scores for Linear itmo")
 
+log_psnr_linear = metrics.log_psnr(hdr_linear, gt)
+print(f"log PSNR value is {log_psnr_linear} dB")     #log psnr between  linear itmo image and reference image
+ssim_linear = metrics.ssim(hdr_linear, gt)
+print(f"SSIM value is {ssim_linear}")
+psnr_linear = metrics.psnr(gt_tmo, hdr_linear_tmo)
+print(f"PSNR value is {psnr_linear} dB")
 
-    print(f"log PSNR value is {metrics.log_psnr(test_image_linear_luminance, reference_image_hdr_luminance)} dB")     #log psnr between  linear itmo image and reference image
+print("------------")
+print("Metric scores for fhdr itmo")
 
-    test_image_linear_tonemapped = load_ldr_image('test_images/generated_linear_tmo.jpg')      #  tone mapped test image
-
-
-    print(f" SSIM value is {metrics.ssim(test_image_linear_hdr, reference_image_hdr)} ")
-    print(f" PSNR value is {metrics.psnr(test_image_linear_tonemapped, reference_image_tonemapped)} dB")
-
-
-
-
-
-    print("------------")
-    print("Metric scores for fhdr itmo")
-    test_image_fhdr = load_hdr_image("test_images/generated_hdr.hdr")      # generated fhdr itmo hdr file
-    test_image_fhdr_luminance = luminance(test_image_fhdr)                   # calculating luminance
-
-    print(f"log PSNR value is {metrics.log_psnr(test_image_fhdr_luminance, reference_image_hdr_luminance)} dB")     #log psnr between fhdr itmo test image and reference image
-
-    test_image_fhdr_tonemapped = load_ldr_image('test_images/generated_tmo.jpg')      #  tone mapped test image
-
-
-
-
-    print(f" SSIM value is {metrics.ssim(test_image_fhdr, reference_image_hdr)} ")
-    print(f" PSNR value is {metrics.psnr(test_image_fhdr_tonemapped, reference_image_tonemapped)} dB")
-
-
-
-if __name__ == '__main__':
-    main()
+log_psnr_fhdr = metrics.log_psnr(hdr_fhdr, gt)
+print(f"log PSNR value is {log_psnr_fhdr} dB")     #log psnr between  linear itmo image and reference image
+ssim_fhdr = metrics.ssim(hdr_fhdr, gt)
+print(f"SSIM value is {ssim_fhdr}")
+psnr_fhdr = metrics.psnr(gt_tmo, hdr_fhdr_tmo)
+print(f"PSNR value is {psnr_fhdr} dB")

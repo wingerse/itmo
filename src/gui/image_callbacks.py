@@ -65,6 +65,8 @@ def tone_map(image, tmo_technique):
     :param tmo_technique: The technique chosen for tone mapping (Reinhard or Drago)
     :return: A tone mapped image (in numpy array format) if successful, else raise exception
     """
+
+    np.seterr(all='raise')
     try:
         if tmo_technique == REINHARD:
             image = reinhard(image)

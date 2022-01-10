@@ -9,6 +9,7 @@ import dearpygui.dearpygui as dpg
 from gui.constants import *
 from gui.image_callbacks import *
 from gui.theme import *
+import numpy as np
 
 class Images:
     """
@@ -22,6 +23,7 @@ class Images:
         self.generated_ldr = None
 
 if __name__ == '__main__':
+    np.seterr(all='raise')
     
     images = Images()
     tmo_items = [REINHARD, DRAGO]

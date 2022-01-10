@@ -3,27 +3,30 @@ from math import log10
 import numpy as np
 from skimage.metrics import structural_similarity
 
-def log_psnr(test_image_hdr_luminance, reference_image_hdr_luminance):
-    """
+from util import luminance
 
-    :param test_image_hdr_luminance: luminance of the test hdr image
-    :param referenceImageHdr: luminance of HDR ground truth image to be compared with
+def log_psnr(img_a, img_b):
+    """
+    :param img_a: An HDR image
+    :param img_b: HDR image to compare with img_a
     :return: logPSNR value denoting the quality of the test image compared to the reference image. The higher the logPSNR value,
              the closer is the test Image to the ground truth.
     Note: The formula for logPSNR was taken from Kai Linn's thesis chapter 2 page 34
     """
-    Lmin =0
-    test_image_hdr_max = np.max(test_image_hdr_luminance,Lmin)
 
-    reference_image_hdr_max = np.max(reference_image_hdr_luminance, Lmin)
+    img_a_l = luminance(img_a)
+    img_b_l = luminance(img_b)
 
-    mse = np.mean((np.log10(test_image_hdr_max) - np.log10(reference_image_hdr_max)) ** 2)
+    l_min =0
+    a_max = np.max(img_a_l, l_min)
+    b_max = np.max(img_b_l, l_min)
+
+    mse = np.mean((np.log10(a_max) - np.log10(b_max)) ** 2)
     if (mse == 0):  # means that no noise present, logPSNR serves no importance here
         return 100
-    Lmax = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
-    log_psnr_value = 20 * log10(log10(Lmax)/math.sqrt(mse))
+    l_max = 10000     # as most HDR displays will not exceed this value.(according to Kai Linn's thesis)
+    log_psnr_value = 20 * log10(log10(l_max)/math.sqrt(mse))
     return log_psnr_value
-
 
 def ssim(test_image, reference_image):
     """
@@ -38,7 +41,7 @@ def ssim(test_image, reference_image):
 
 
 
-def psnr(test_image_tonemapped, reference_image_tonemapped):
+def psnr(img_a, img_b):
     """
     code adapted from https://github.com/jackfrued/Python-1/blob/master/analysis/compression_analysis/psnr.py
 
@@ -49,7 +52,7 @@ def psnr(test_image_tonemapped, reference_image_tonemapped):
     :return: the PSNR value
     """
 
-    mse = np.mean((test_image_tonemapped - reference_image_tonemapped) ** 2)
+    mse = np.mean((img_a - img_b) ** 2)
     if (mse == 0):  # means that no noise present, PSNR serves no importance here
         return 100
     PIXEL_MAX = 1
