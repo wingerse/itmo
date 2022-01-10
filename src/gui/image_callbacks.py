@@ -1,3 +1,9 @@
+"""
+usage: image_callbacks.py
+
+Contains functions concerning the user interface.
+"""
+
 import sys
 sys.path.append('../')
 

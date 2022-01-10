@@ -1,4 +1,6 @@
 """
+usage: image_callbacks.py
+
 Constants used in the user interface. This includes width, height or tags of items.
 """
 

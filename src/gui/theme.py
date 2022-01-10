@@ -1,3 +1,9 @@
+"""
+usage: theme.py
+
+Contains the theme and styling for UI items.
+"""
+
 import dearpygui.dearpygui as dpg
 
 dpg.create_context()

@@ -1,3 +1,9 @@
+"""
+usage: main.py
+
+Starts the application.
+"""
+
 import include_parent_path
 import dearpygui.dearpygui as dpg
 from gui.constants import *
