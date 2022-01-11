@@ -27,20 +27,9 @@ def test_mu_tonemap():
     res_two_pixel = [[[1.0000, 1.0164, 1.0475], [1.0000, 1.0475, 1.0656]]]
     res_three_pixel = [[[1.0000, 1.0164, 1.0475], [1.0475, 1.0514, 1.0656], [1.0000, 1.0475, 1.0656]]]
 
-    for i in range(len(one_pixel)):
-        for j in range(len(one_pixel[i])):
-            for k in range(len(one_pixel[i][j])):
-                assert abs(one_pixel[i][j][k] - res_one_pixel[i][j][k]) < THRESHOLD
-
-    for i in range(len(two_pixel)):
-        for j in range(len(two_pixel[i])):
-            for k in range(len(two_pixel[i][j])):
-                assert abs(two_pixel[i][j][k] - res_two_pixel[i][j][k]) < THRESHOLD
-
-    for i in range(len(three_pixel)):
-        for j in range(len(three_pixel[i])):
-            for k in range(len(three_pixel[i][j])):
-                assert abs(three_pixel[i][j][k] - res_three_pixel[i][j][k]) < THRESHOLD
+    assert (one_pixel - res_one_pixel <= THRESHOLD).all()
+    assert (two_pixel - res_two_pixel <= THRESHOLD).all()
+    assert (three_pixel - res_three_pixel <= THRESHOLD).all()
 
 
 def test_drago():
@@ -56,20 +45,9 @@ def test_drago():
     res_two_pixel = [[[0.6964, 0.7846, 0.9543], [0.6593, 0.9035, 1.0000]]]
     res_three_pixel = [[[0.6945, 0.7825, 0.9517], [0.8763, 0.8960, 0.9699], [0.6593, 0.9035, 1.0000]]]
 
-    for i in range(len(one_pixel)):
-        for j in range(len(one_pixel[i])):
-            for k in range(len(one_pixel[i][j])):
-                assert abs(one_pixel[i][j][k] - res_one_pixel[i][j][k]) < THRESHOLD
-
-    for i in range(len(two_pixel)):
-        for j in range(len(two_pixel[i])):
-            for k in range(len(two_pixel[i][j])):
-                assert abs(two_pixel[i][j][k] - res_two_pixel[i][j][k]) < THRESHOLD
-
-    for i in range(len(three_pixel)):
-        for j in range(len(three_pixel[i])):
-            for k in range(len(three_pixel[i][j])):
-                assert abs(three_pixel[i][j][k] - res_three_pixel[i][j][k]) < THRESHOLD
+    assert (one_pixel - res_one_pixel <= THRESHOLD).all()
+    assert (two_pixel - res_two_pixel <= THRESHOLD).all()
+    assert (three_pixel - res_three_pixel <= THRESHOLD).all()
 
 def test_reinhard():
     one_pixel = np.array([[[1.0, 1.3, 2.0]]])
@@ -84,17 +62,6 @@ def test_reinhard():
     res_two_pixel = [[[0.6748, 0.7602, 0.9247], [0.6593, 0.9035, 1.0000]]]
     res_three_pixel = [[[0.6733, 0.7586, 0.9227], [0.8912, 0.9112, 0.9864], [0.6593, 0.9035, 1.0000]]]
 
-    for i in range(len(one_pixel)):
-        for j in range(len(one_pixel[i])):
-            for k in range(len(one_pixel[i][j])):
-                assert abs(one_pixel[i][j][k] - res_one_pixel[i][j][k]) < THRESHOLD
-
-    for i in range(len(two_pixel)):
-        for j in range(len(two_pixel[i])):
-            for k in range(len(two_pixel[i][j])):
-                assert abs(two_pixel[i][j][k] - res_two_pixel[i][j][k]) < THRESHOLD
-
-    for i in range(len(three_pixel)):
-        for j in range(len(three_pixel[i])):
-            for k in range(len(three_pixel[i][j])):
-                assert abs(three_pixel[i][j][k] - res_three_pixel[i][j][k]) < THRESHOLD
+    assert (one_pixel - res_one_pixel <= THRESHOLD).all()
+    assert (two_pixel - res_two_pixel <= THRESHOLD).all()
+    assert (three_pixel - res_three_pixel <= THRESHOLD).all()
