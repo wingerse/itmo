@@ -3,6 +3,8 @@ from tmo import reinhard, drago, mu_tonemap
 from util import load_hdr_image, save_ldr_image
 import numpy as np
 
+THRESHOLD = 0.0001
+
 def test_tonemap():
     hdr = load_hdr_image("datasets/aug_dataset/hdr/100.hdr")
     print(hdr.min(), hdr.max())
@@ -21,24 +23,24 @@ def test_mu_tonemap():
     two_pixel = mu_tonemap(two_pixel)
     three_pixel = mu_tonemap(three_pixel)
 
-    res_one_pixel = [[[10000, 10164, 10475]]]
-    res_two_pixel = [[[10000, 10164, 10475], [10000, 10475, 10656]]]
-    res_three_pixel = [[[10000, 10164, 10475], [10475, 10514, 10656], [10000, 10475, 10656]]]
+    res_one_pixel = [[[1.0000, 1.0164, 1.0475]]]
+    res_two_pixel = [[[1.0000, 1.0164, 1.0475], [1.0000, 1.0475, 1.0656]]]
+    res_three_pixel = [[[1.0000, 1.0164, 1.0475], [1.0475, 1.0514, 1.0656], [1.0000, 1.0475, 1.0656]]]
 
     for i in range(len(one_pixel)):
         for j in range(len(one_pixel[i])):
             for k in range(len(one_pixel[i][j])):
-                assert int(one_pixel[i][j][k] * 10000) == res_one_pixel[i][j][k]
+                assert abs(one_pixel[i][j][k] - res_one_pixel[i][j][k]) < THRESHOLD
 
     for i in range(len(two_pixel)):
         for j in range(len(two_pixel[i])):
             for k in range(len(two_pixel[i][j])):
-                assert int(two_pixel[i][j][k] * 10000) == res_two_pixel[i][j][k]
+                assert abs(two_pixel[i][j][k] - res_two_pixel[i][j][k]) < THRESHOLD
 
     for i in range(len(three_pixel)):
         for j in range(len(three_pixel[i])):
             for k in range(len(three_pixel[i][j])):
-                assert int(three_pixel[i][j][k] * 10000) == res_three_pixel[i][j][k]
+                assert abs(three_pixel[i][j][k] - res_three_pixel[i][j][k]) < THRESHOLD
 
 
 def test_drago():
@@ -50,24 +52,24 @@ def test_drago():
     two_pixel = drago(two_pixel)
     three_pixel = drago(three_pixel)
 
-    res_one_pixel = [[[7297, 8221, 10000]]]
-    res_two_pixel = [[[6964, 7846, 9543], [6593, 9035, 10000]]]
-    res_three_pixel = [[[6945, 7825, 9517], [8763, 8960, 9699], [6593, 9035, 10000]]]
+    res_one_pixel = [[[0.7297, 0.8221, 1.0000]]]
+    res_two_pixel = [[[0.6964, 0.7846, 0.9543], [0.6593, 0.9035, 1.0000]]]
+    res_three_pixel = [[[0.6945, 0.7825, 0.9517], [0.8763, 0.8960, 0.9699], [0.6593, 0.9035, 1.0000]]]
 
     for i in range(len(one_pixel)):
         for j in range(len(one_pixel[i])):
             for k in range(len(one_pixel[i][j])):
-                assert int(one_pixel[i][j][k] * 10000) == res_one_pixel[i][j][k]
+                assert abs(one_pixel[i][j][k] - res_one_pixel[i][j][k]) < THRESHOLD
 
     for i in range(len(two_pixel)):
         for j in range(len(two_pixel[i])):
             for k in range(len(two_pixel[i][j])):
-                assert int(two_pixel[i][j][k] * 10000) == res_two_pixel[i][j][k]
+                assert abs(two_pixel[i][j][k] - res_two_pixel[i][j][k]) < THRESHOLD
 
     for i in range(len(three_pixel)):
         for j in range(len(three_pixel[i])):
             for k in range(len(three_pixel[i][j])):
-                assert int(three_pixel[i][j][k] * 10000) == res_three_pixel[i][j][k]
+                assert abs(three_pixel[i][j][k] - res_three_pixel[i][j][k]) < THRESHOLD
 
 def test_reinhard():
     one_pixel = np.array([[[1.0, 1.3, 2.0]]])
@@ -78,21 +80,21 @@ def test_reinhard():
     two_pixel = reinhard(two_pixel)
     three_pixel = reinhard(three_pixel)
 
-    res_one_pixel = [[[7297, 8221, 10000]]]
-    res_two_pixel = [[[6748, 7602, 9247], [6593, 9035, 10000]]]
-    res_three_pixel = [[[6733, 7586, 9227], [8912, 9112, 9864], [6593, 9035, 10000]]]
+    res_one_pixel = [[[0.7297, 0.8221, 1.0000]]]
+    res_two_pixel = [[[0.6748, 0.7602, 0.9247], [0.6593, 0.9035, 1.0000]]]
+    res_three_pixel = [[[0.6733, 0.7586, 0.9227], [0.8912, 0.9112, 0.9864], [0.6593, 0.9035, 1.0000]]]
 
     for i in range(len(one_pixel)):
         for j in range(len(one_pixel[i])):
             for k in range(len(one_pixel[i][j])):
-                assert int(one_pixel[i][j][k] * 10000) == res_one_pixel[i][j][k]
+                assert abs(one_pixel[i][j][k] - res_one_pixel[i][j][k]) < THRESHOLD
 
     for i in range(len(two_pixel)):
         for j in range(len(two_pixel[i])):
             for k in range(len(two_pixel[i][j])):
-                assert int(two_pixel[i][j][k] * 10000) == res_two_pixel[i][j][k]
+                assert abs(two_pixel[i][j][k] - res_two_pixel[i][j][k]) < THRESHOLD
 
     for i in range(len(three_pixel)):
         for j in range(len(three_pixel[i])):
             for k in range(len(three_pixel[i][j])):
-                assert int(three_pixel[i][j][k] * 10000) == res_three_pixel[i][j][k]
+                assert abs(three_pixel[i][j][k] - res_three_pixel[i][j][k]) < THRESHOLD
