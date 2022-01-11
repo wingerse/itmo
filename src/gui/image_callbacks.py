@@ -65,8 +65,9 @@ def tone_map(image, tmo_technique):
     :param tmo_technique: The technique chosen for tone mapping (Reinhard or Drago)
     :return: A tone mapped image (in numpy array format) if successful, else raise exception
     """
-
+    # raise exception if any floating point exceptions instead of warning
     np.seterr(all='raise')
+    
     try:
         if tmo_technique == REINHARD:
             image = reinhard(image)
@@ -211,6 +212,15 @@ def select_ldr(sender, app_data, user_data):
         display_error(e, "The following image file could not be found:\n'{}'\nRemember to include file extensions!".format(file_name))
         return
     images.ldr_flag = True
+    
+    # remove generated image
+    if dpg.does_alias_exist(GENERATED_IMAGE):
+        dpg.delete_item(GENERATED_IMAGE)
+        dpg.delete_item(GENERATED_REGISTRY)
+        images.generated = None
+        images.generated_ldr = None
+        dpg.configure_item(SAVE_BUTTON, enabled=False)
+
     
     # display and enable generate button
     display_image(images.ldr, window, LDR_REGISTRY, ORIGINAL_LDR_IMAGE)
