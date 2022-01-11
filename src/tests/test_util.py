@@ -7,6 +7,7 @@ import pytest
 from itmo.fhdr.util import preprocess_hdr, preprocess_ldr, unpreprocess_hdr, unpreprocess_ldr
 import torch
 
+THRESHOLD = 0.0001
 
 # This file is used for testing functions in the util.py file
 
@@ -239,3 +240,12 @@ def test_change_luminance():
     l_new = np.array([[0.69420]])
     img = change_luminance(img, l_old, l_new)
     assert luminance(img)[0, 0] == 0.69420
+
+def test_log_mean():
+    one_pixel = np.array([[[1.0, 1.3, 2.0]]])
+    two_pixel = np.array([[[1.0, 1.3, 2.0], [1.0, 2.0, 2.5]]])
+    three_pixel = np.array([[[1.0, 1.3, 2.0], [2.0, 2.1, 2.5],[1.0, 2.0, 2.5]]])
+
+    assert abs(logmean(one_pixel) - 1.3750) < THRESHOLD
+    assert abs(logmean(two_pixel) - 1.5334) < THRESHOLD
+    assert abs(logmean(three_pixel) - 1.7267) < THRESHOLD
