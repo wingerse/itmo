@@ -7,6 +7,7 @@ from util import apply_gamma, load_hdr_image, luminance, save_hdr_image, save_ld
 from skimage.metrics import structural_similarity
 from quality import metrics
 import numpy as np
+import os
 
 def test_linear_itmo():
     ldr = np.array([[[0.0, 0.5, 1.0]]])
@@ -20,6 +21,7 @@ def test_linear_itmo():
     assert hdr.shape == ldr.shape
 
 def _test_fhdr(img_number):
+    # load ldr images and do linear and fhdr itmos
     ldr = load_ldr_image(f"datasets/testing_data_ours/ldr/{img_number}.jpg")
     gt = load_hdr_image(f"datasets/testing_data_ours/hdr/{img_number}.hdr")
     hdr = fhdr(ldr)
@@ -28,11 +30,6 @@ def _test_fhdr(img_number):
     gt_t = mu_tonemap(gt)
     hdr_t = mu_tonemap(hdr)
     hdr_linear_t = mu_tonemap(hdr_linear)
-
-    save_ldr_image(ldr, f"test_outputs/fhdr_ldr_{img_number}.png")
-    save_ldr_image(drago(gt), f"test_outputs/fhdr_gt_{img_number}.png")
-    save_ldr_image(drago(hdr), f"test_outputs/fhdr_hdr_{img_number}.png")
-    save_ldr_image(drago(hdr_linear), f"test_outputs/fhdr_hdr_linear_{img_number}.png")
 
     # correct dimensions
     assert hdr.shape == gt.shape
@@ -64,6 +61,23 @@ def test_fhdr_10_images():
     _test_fhdr("2353") # cars on a road
     _test_fhdr("2966") # person indoors
     _test_fhdr("3479") # sky, road, trees
+
+def test_fhdr_test_difficult_image():
+    _test_fhdr("4992") # a very dark image
+
+def test_fhdr_all_images():
+    imgs = os.listdir("datasets/testing_data_ours/ldr")
+    fails = 0
+    for img in imgs:
+        try:
+            _test_fhdr(img.split('.')[0])
+        # only assertion failures are counted
+        except AssertionError:
+            print(img)
+            fails += 1
+    
+    fail_percent = fails / len(imgs) * 100
+    assert fail_percent <= 6
 
 def test_fhdr_works_on_all_black():
     ldr = load_ldr_image("test_images/black.png")
