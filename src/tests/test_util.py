@@ -153,17 +153,6 @@ def test_unequal_save_hdr_image():
     unequal_img = load_hdr_image(unequal_img_path)
     assert (np.array(unequal_img) != np.array(saved_img)).any()
 
-def test_logmean():
-    l = np.array([
-        [1.0, 2.0, 3.0],
-        [1.0, 2.0, 3.0],
-        [1.0, 2.0, 100.0],
-    ])
-
-    l = logmean(l)
-    # calculate logmean by hand and check if its the same
-    assert l == 2.682825957054137
-
 def test_apply_gamma():
     # 0.0 is the smallest, 0.5 is the middle, 1.0 is the max, covering all values
     ldr = np.array([[[0.0, 0.5, 1.0]]])
@@ -244,11 +233,11 @@ def test_change_luminance():
     img = change_luminance(img, l_old, l_new)
     assert luminance(img)[0, 0] == 0.69420
 
-def test_log_mean():
-    one_pixel = np.array([[[1.0, 1.3, 2.0]]])
-    two_pixel = np.array([[[1.0, 1.3, 2.0], [1.0, 2.0, 2.5]]])
-    three_pixel = np.array([[[1.0, 1.3, 2.0], [2.0, 2.1, 2.5],[1.0, 2.0, 2.5]]])
+def test_logmean():
+    one_pixel = np.array([[[1.0, 1.3, 100.0]]])
+    two_pixel = np.array([[[1.0, 1.3, 2.0], [1.0, 2.0, 100.0]]])
+    three_pixel = np.array([[[1.0, 1.3, 2.0], [2.0, 2.1, 2.5],[1.0, 2.0, 1000.0]]])
 
-    assert abs(logmean(one_pixel) - 1.3750) < THRESHOLD
-    assert abs(logmean(two_pixel) - 1.5334) < THRESHOLD
-    assert abs(logmean(three_pixel) - 1.7267) < THRESHOLD
+    assert abs(logmean(one_pixel) - 5.0657) < THRESHOLD
+    assert abs(logmean(two_pixel) - 2.8357) < THRESHOLD
+    assert abs(logmean(three_pixel) - 3.3601) < THRESHOLD

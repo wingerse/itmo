@@ -30,7 +30,7 @@ if __name__ == '__main__':
     itmo_items = [FHDR, LINEAR]
     
     dpg.create_context()
-    dpg.create_viewport(title="LDR to HDR Converter", width=1500, height= 750, x_pos=0, y_pos=0)
+    dpg.create_viewport(title="LDR to HDR Converter", width=1530, height= 800, x_pos=0, y_pos=0)
     dpg.setup_dearpygui()
     
     # load fonts
@@ -149,8 +149,8 @@ if __name__ == '__main__':
 
     # set the theme
     dpg.bind_theme(global_theme)
-    dpg.bind_item_theme(error_display, error_theme)
-    dpg.bind_item_theme(save_display, save_theme)
+    dpg.bind_item_theme(error_display, modal_theme)
+    dpg.bind_item_theme(save_display, modal_theme)
     
     # start display
     dpg.show_viewport()

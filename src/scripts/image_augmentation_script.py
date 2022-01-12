@@ -40,7 +40,7 @@ count = 0
 for hdr_path in tqdm(hdrs):
     # for every hdr image, augment 1 images per megapixel and save the results. 
     hdr = load_hdr_image(hdr_path)
-    aug = augment_images(hdr, 1, 1024)
+    aug = augment_images(hdr, args.count_per_mp, args.size)
     for ldr, hdr in aug:
         count += 1
         save_ldr_image(ldr, os.path.join(args.output_path, "ldr", f"{count}.jpg"))

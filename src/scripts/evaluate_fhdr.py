@@ -16,6 +16,7 @@ import include_parent_path
 from itmo.fhdr.test import test
 from matplotlib import pyplot as plt
 import argparse
+from torch.cuda.memory import max_memory_allocated
 
 p = argparse.ArgumentParser(description="Evaluate FHDR and print accuracy", 
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -27,3 +28,5 @@ args = p.parse_args()
 
 psnr, ssim = test(args.ckpt_path, args.dataset_path, args.output_path)
 print(f"PSNR: {psnr}, SSIM: {ssim}")
+max_memory = max_memory_allocated() / 1024 / 1024
+print(f"Max memory: {max_memory}")
