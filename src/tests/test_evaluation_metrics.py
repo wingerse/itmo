@@ -8,15 +8,15 @@ import pytest
 
 def test_log_psnr():
     # testing log_psnr on a single pixel luminance. The log_psnr is calculated manually and compared to the implementation in the algorithm
-    test_luminance = [[0.179]]
-    reference_luminance = [[0.279]]
-    assert metrics.log_psnr(test_luminance,reference_luminance) == 26.341259265210763
+    test_image = np.array([[[0.1,0.2,0.3]]])
+    reference_image = np.array([[[0.2,0.3,0.4]]])
+    assert metrics.log_psnr(test_image,reference_image) == 26.34125926521076
 
 def test_log_psnr_same_images():
     # for same images, that is, images with same luminance, the mean square error will be 0 and log_psnr will take maximum value which is 100
-    test_luminance = [[0.179]]
-    reference_luminance = [[0.179]]
-    assert metrics.log_psnr(test_luminance,reference_luminance) == 100
+    test_image = np.array([[[0.1,0.2,0.3]]])
+    reference_image = np.array([[[0.1,0.2,0.3]]])
+    assert metrics.log_psnr(test_image,reference_image) == 100
 
 def test_psnr():
     # calculating psnr manually using one pixel and comparing it with the implementation in the algorithm

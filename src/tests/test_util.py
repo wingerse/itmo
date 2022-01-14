@@ -1,3 +1,7 @@
+""""
+This file is used for testing functions in the util.py file
+"""
+
 import include_parent_path
 from tmo.util import logmean
 from util import apply_gamma, change_luminance, load_hdr_image, remove_gamma, save_hdr_image, save_ldr_image, load_ldr_image, luminance, _load_image, _save_image
@@ -9,7 +13,6 @@ import torch
 
 THRESHOLD = 0.0001
 
-# This file is used for testing functions in the util.py file
 
 
 # test luminance
@@ -78,9 +81,9 @@ def test_save_ldr_image():
     """
 
     img_path = "test_images/ldr_test.png"
-    frst_image = load_hdr_image(img_path)
-    save_hdr_image(frst_image,"test_images/test_save_ldr_image.png")
-    saved_img = load_hdr_image ("test_images/test_save_ldr_image.png")
+    frst_image = load_ldr_image(img_path)
+    save_ldr_image(frst_image,"test_images/test_save_ldr_image.png")
+    saved_img = load_ldr_image ("test_images/test_save_ldr_image.png")
     assert (np.array(frst_image) == np.array(saved_img)).all()
 
 def test_save_ldr_image_to_invalid_location():
@@ -88,7 +91,7 @@ def test_save_ldr_image_to_invalid_location():
     Testing if saving a ldr image to an invalid location throws an exception
     """
     img_path = "test_images/ldr_test2.jpg"
-    frst_image = load_hdr_image(img_path)
+    frst_image = load_ldr_image(img_path)
     with pytest.raises(Exception):
         save_img_destination_path = "tst_images/test2_save_ldr_image.jpg"
         save_hdr_image(frst_image,save_img_destination_path)
@@ -104,11 +107,11 @@ def test_unequal_save_ldr_image():
     """
 
     img_path = "test_images/ldr_test2.jpg"
-    frst_image = load_hdr_image(img_path)
-    save_hdr_image(frst_image,"test_images/test2_save_ldr_image.jpg")
-    saved_img = load_hdr_image ("test_images/test2_save_ldr_image.jpg")
+    frst_image = load_ldr_image(img_path)
+    save_ldr_image(frst_image,"test_images/test2_save_ldr_image.jpg")
+    saved_img = load_ldr_image ("test_images/test2_save_ldr_image.jpg")
     unequal_img_path = "test_images/ldr_test.png"
-    unequal_img = load_hdr_image(unequal_img_path)
+    unequal_img = load_ldr_image(unequal_img_path)
     assert (np.array(unequal_img) != np.array(saved_img)).any()
 
 def test_save_hdr_image():

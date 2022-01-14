@@ -44,7 +44,7 @@ def test_benchmark(benchmark):
     """
     benchmarking to run the whole algorithm together five times to see the min, max, mean, median, standard deviation
     """
-    benchmark(running_whole_algorithm_together())
+    benchmark(running_whole_algorithm_together)
 
 
 def running_fhdr_and_tonemap(filename):
@@ -57,7 +57,7 @@ def running_fhdr_and_tonemap(filename):
     save_ldr_image(drago(hdr), "test_outputs/" + filename)
 
 
-def test_time_for_four_runs():
+def test_time_for_five_runs():
     """
     running the fhdr and tmo several times to see the behavior on the time for several runs
     """
@@ -66,14 +66,18 @@ def test_time_for_four_runs():
     t = default_timer() - t
     print(t)
     t = default_timer()
-    running_fhdr_and_tonemap("ldr_test2.jpg")
+    running_fhdr_and_tonemap("ldr_test.png")
     t = default_timer() - t
     print(t)
     t = default_timer()
-    running_fhdr_and_tonemap("ldr_test2.jpg")
+    running_fhdr_and_tonemap("ldr_test.png")
     t = default_timer() - t
     print(t)
     t = default_timer()
-    running_fhdr_and_tonemap("ldr_test3.jpg")
+    running_fhdr_and_tonemap("ldr_test.png")
+    t = default_timer() - t
+    print(t)
+    t = default_timer()
+    running_fhdr_and_tonemap("ldr_test.png")
     t = default_timer() - t
     print(t)
