@@ -14,3 +14,6 @@ Download the dataset from [this](https://drive.google.com/file/d/1EwVvrWESQlXJ87
 
 # Scripts
 Check out the scripts at `src/scripts/` for doing all sorts of things.
+
+# Test images
+You can test with images in `test_images/demo` or `datasets/testing_data_ours/ldr`
