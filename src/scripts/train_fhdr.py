@@ -1,6 +1,16 @@
 """
-Script to train the model using our dataset.  
+usage: train_fhdr.py [-h] [--dataset_path DATASET_PATH] [--batch_size BATCH_SIZE]
+
+Train FHDR model
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --dataset_path DATASET_PATH
+                        Path of training dataset (default: datasets/training_data_ours)
+  --batch_size BATCH_SIZE
+                        Batch size (default: 8)
 """
+
 import include_parent_path
 from itmo.fhdr.train import train
 import sys
