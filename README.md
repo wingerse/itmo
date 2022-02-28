@@ -28,7 +28,10 @@ Example output:
 - `python src/scripts/main.py`
 
 ## Dataset
-Download the dataset from [this](https://drive.google.com/file/d/1EwVvrWESQlXJ87E6JvTwFG_7arEoBZMz/view?usp=sharing) link.
+Download the dataset from [this](https://drive.google.com/file/d/1EwVvrWESQlXJ87E6JvTwFG_7arEoBZMz/view?usp=sharing) link.  
+This zip file contains training data and testing data.  
+If you want to do your own data augmentation, you can get the full high definition HDR dataset from [here](https://drive.google.com/file/d/18aEi23aVdw73iJHhL_bfEb3phcExzllW/view?usp=sharing). 
+Then use `src/scripts/image_augmentation_script.py` and `src/scripts/split_dataset.py` to generate your own training and testing datasets.  
 
 # Scripts
 Check out the scripts at `src/scripts/` for doing training, testing, image augmentation, and running TMO and ITMO.
