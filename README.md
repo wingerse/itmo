@@ -1,13 +1,20 @@
 # Inverse Tone Mapping
+Transform LDR (Low Dynamic Range) images to HDR (High Dynamic Range) images using machine learning which improves image 
+contrast and reconstructs areas lost due to underexposure or overexposure.  
+The machine learning algorithm is a modified version of [FHDR](https://github.com/mukulkhanna/FHDR)
+
 ![](./docs/gui1.png)
+
+Example image: 
+
 ![](./docs/gui2.png)
 
 ## Setup
-    - Install [miniconda](https://docs.conda.io/en/latest/miniconda.html)
-    - `conda env create -f environment.yml` 
-    - `conda activate fyp`
-    - `pip install dearpygui==1.2.3`
-    - `python src/scripts/main.py`
+- Install [miniconda](https://docs.conda.io/en/latest/miniconda.html)
+- `conda env create -f environment.yml` 
+- `conda activate fyp`
+- `pip install dearpygui==1.2.3`
+- `python src/scripts/main.py`
 
 ## Dataset
 Download the dataset from [this](https://drive.google.com/file/d/1EwVvrWESQlXJ87E6JvTwFG_7arEoBZMz/view?usp=sharing) link.
